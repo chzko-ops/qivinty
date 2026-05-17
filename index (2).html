@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qvinty — Дэлгүүрээ онлайн болго</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --pink-light: #FDE5E8;
+  --pink-mid: #E7B4B9;
+  --pink-deep: #A4565C;
+  --lime: #E8F0A2;
+  --olive: #999D4F;
+  --white: #FFFDF9;
+  --dark: #1C1A18;
+  --text: #3A3330;
+  --muted: #7A6E6B;
+  --radius: 14px;
+  --radius-lg: 22px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: rgba(255,253,249,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--pink-mid); }
+.logo { font-size: 22px; font-weight: 800; color: var(--pink-deep); letter-spacing: -1px; cursor: pointer; }
+.logo span { color: var(--olive); }
+.nav-right { display: flex; gap: 10px; align-items: center; }
+.btn { padding: 9px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s; }
+.btn-outline { background: transparent; border: 1.5px solid var(--pink-deep); color: var(--pink-deep); }
+.btn-outline:hover { background: var(--pink-light); }
+.btn-primary { background: var(--pink-deep); color: white; }
+.btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-lime { background: var(--lime); color: var(--olive); }
+.btn-lime:hover { opacity: 0.85; }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+.btn-danger { background: #fee2e2; color: #dc2626; }
+
+/* PAGES */
+.page { display: none; min-height: 100vh; padding-top: 64px; }
+.page.active { display: block; }
+
+/* HERO */
+.hero { min-height: calc(100vh - 64px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; background: linear-gradient(160deg, var(--pink-light) 0%, var(--white) 55%, var(--lime) 100%); }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: white; border: 1px solid var(--pink-mid); border-radius: 30px; padding: 6px 16px; font-size: 12px; font-weight: 600; color: var(--pink-deep); margin-bottom: 24px; }
+.hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--olive); animation: pulse 2s infinite; }
+.hero h1 { font-size: clamp(32px, 6vw, 64px); font-weight: 800; line-height: 1.1; color: var(--dark); max-width: 720px; margin-bottom: 16px; letter-spacing: -1px; }
+.hero h1 em { color: var(--pink-deep); font-style: normal; }
+.hero p { font-size: 17px; color: var(--muted); max-width: 480px; margin-bottom: 32px; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.hero-note { margin-top: 16px; font-size: 13px; color: var(--olive); font-weight: 500; }
+
+/* STATS */
+.stats { display: flex; justify-content: center; background: white; border-top: 1px solid var(--pink-mid); border-bottom: 1px solid var(--pink-mid); }
+.stat { flex: 1; max-width: 180px; text-align: center; padding: 24px 16px; border-right: 1px solid var(--pink-mid); }
+.stat:last-child { border-right: none; }
+.stat-num { font-size: 28px; font-weight: 800; color: var(--pink-deep); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* CATEGORIES */
+.section { padding: 64px 32px; max-width: 1100px; margin: 0 auto; }
+.section-center { text-align: center; }
+.section-tag { display: inline-block; background: var(--lime); color: var(--olive); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 10px; }
+.section-title { font-size: clamp(22px, 4vw, 36px); font-weight: 800; color: var(--dark); margin-bottom: 8px; letter-spacing: -0.5px; }
+.section-sub { color: var(--muted); font-size: 15px; }
+
+.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-top: 40px; }
+.cat-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius-lg); padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.22s; }
+.cat-card:hover { border-color: var(--pink-deep); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(164,86,92,0.12); }
+.cat-icon { font-size: 32px; margin-bottom: 10px; }
+.cat-name { font-size: 13px; font-weight: 600; color: var(--dark); }
+.cat-count { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* FILTERS */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.filter-pill { padding: 7px 16px; border-radius: 30px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--pink-mid); background: transparent; color: var(--muted); font-family: inherit; transition: all 0.2s; }
+.filter-pill.active, .filter-pill:hover { background: var(--pink-deep); color: white; border-color: var(--pink-deep); }
+
+/* SHOP CARDS */
+.shops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+.shop-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; transition: all 0.22s; }
+.shop-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(164,86,92,0.12); }
+.shop-cover { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 48px; position: relative; }
+.shop-cover.c1 { background: linear-gradient(135deg, var(--pink-light), var(--pink-mid)); }
+.shop-cover.c2 { background: linear-gradient(135deg, var(--lime), #c8d870); }
+.shop-cover.c3 { background: linear-gradient(135deg, #FFF3E0, #FFD9A0); }
+.shop-cover.c4 { background: linear-gradient(135deg, #E8F0E0, #C5D9A0); }
+.shop-cover.c5 { background: linear-gradient(135deg, #f3e5f5, #ce93d8); }
+.shop-badge { position: absolute; top: 10px; right: 10px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-trend { background: var(--pink-deep); color: white; }
+.badge-new { background: var(--lime); color: var(--olive); }
+.badge-trial { background: var(--olive); color: white; }
+.shop-info { padding: 14px; }
+.shop-name { font-weight: 700; font-size: 15px; color: var(--dark); }
+.shop-cat { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.shop-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.shop-rating { font-size: 13px; color: var(--olive); font-weight: 600; }
+.shop-addr { font-size: 11px; color: var(--muted); }
+
+/* AUTH PAGES */
+.auth-wrap { min-height: calc(100vh - 64px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; background: linear-gradient(160deg, var(--pink-light), var(--white)); }
+.auth-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius-lg); padding: 40px; width: 100%; max-width: 420px; }
+.auth-title { font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 6px; letter-spacing: -0.5px; }
+.auth-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
+.form-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); font-size: 14px; font-family: inherit; background: var(--white); color: var(--text); transition: border-color 0.2s; outline: none; }
+.form-input:focus { border-color: var(--pink-deep); }
+.form-select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); font-size: 14px; font-family: inherit; background: var(--white); color: var(--text); outline: none; cursor: pointer; }
+.form-select:focus { border-color: var(--pink-deep); }
+.form-textarea { width: 100%; padding: 11px 14px; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); font-size: 14px; font-family: inherit; background: var(--white); color: var(--text); outline: none; resize: vertical; min-height: 80px; }
+.form-textarea:focus { border-color: var(--pink-deep); }
+.btn-block { width: 100%; padding: 13px; font-size: 15px; }
+.auth-switch { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
+.auth-switch a { color: var(--pink-deep); font-weight: 600; cursor: pointer; text-decoration: none; }
+.error-msg { background: #fee2e2; color: #dc2626; padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 16px; display: none; }
+.success-msg { background: #dcfce7; color: #16a34a; padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 16px; display: none; }
+
+/* DASHBOARD */
+.dash-wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+.dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+.dash-title { font-size: 22px; font-weight: 800; color: var(--dark); }
+.dash-sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
+.trial-banner { background: linear-gradient(135deg, var(--lime), #d4e070); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.trial-text { font-size: 14px; font-weight: 600; color: var(--olive); }
+.trial-sub { font-size: 12px; color: var(--olive); opacity: 0.8; }
+
+/* MY SHOPS */
+.my-shops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+.my-shop-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius-lg); padding: 20px; }
+.my-shop-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.my-shop-name { font-weight: 700; font-size: 16px; color: var(--dark); }
+.my-shop-cat { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.plan-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--lime); color: var(--olive); }
+.my-shop-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+/* ADD SHOP MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(28,26,24,0.5); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-title { font-size: 20px; font-weight: 800; color: var(--dark); }
+.modal-close { background: var(--pink-light); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--pink-deep); }
+.schedule-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; align-items: center; font-size: 13px; }
+.schedule-day { font-weight: 500; }
+.social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* SHOP DETAIL */
+.shop-detail-wrap { max-width: 900px; margin: 0 auto; padding: 24px; }
+.detail-cover { height: 220px; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 72px; margin-bottom: -40px; position: relative; }
+.detail-header { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; padding-top: 52px; }
+.detail-name { font-size: 24px; font-weight: 800; color: var(--dark); }
+.detail-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.detail-meta span { display: flex; align-items: center; gap: 4px; }
+.detail-socials { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.social-btn { padding: 6px 14px; border-radius: 30px; font-size: 12px; font-weight: 500; text-decoration: none; border: 1.5px solid var(--pink-mid); color: var(--muted); transition: all 0.2s; background: white; }
+.social-btn:hover { border-color: var(--pink-deep); color: var(--pink-deep); }
+.detail-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--pink-mid); margin-bottom: 20px; overflow-x: auto; }
+.detail-tab { padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 2.5px solid transparent; white-space: nowrap; background: transparent; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: all 0.2s; }
+.detail-tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* PRODUCTS GRID */
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.prod-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); overflow: hidden; }
+.prod-img { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 44px; background: var(--pink-light); position: relative; }
+.prod-sale-tag { position: absolute; top: 8px; left: 8px; background: var(--pink-deep); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.prod-info { padding: 12px; }
+.prod-name { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 3px; }
+.prod-desc { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
+.prod-footer { display: flex; justify-content: space-between; align-items: center; }
+.prod-price { font-size: 15px; font-weight: 800; color: var(--pink-deep); }
+.prod-orig { font-size: 11px; color: var(--muted); text-decoration: line-through; margin-left: 4px; }
+.add-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--pink-deep); color: white; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; transition: transform 0.2s; }
+.add-btn:hover { transform: scale(1.12); }
+
+/* SCHEDULE TABLE */
+.sched-table { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); overflow: hidden; max-width: 440px; }
+.sched-row { display: flex; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid var(--pink-light); font-size: 14px; }
+.sched-row:last-child { border-bottom: none; }
+.sched-row.today { background: var(--pink-light); }
+.sched-day { font-weight: 600; }
+.sched-time { color: var(--muted); }
+.sched-closed { color: var(--pink-deep); }
+
+/* DELIVERY CARDS */
+.delivery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.delivery-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); padding: 18px; text-align: center; }
+.del-icon { font-size: 28px; margin-bottom: 8px; }
+.del-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.del-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.del-price { font-weight: 700; color: var(--pink-deep); margin-top: 8px; font-size: 14px; }
+
+/* LOADING */
+.loading { display: flex; align-items: center; justify-content: center; padding: 60px; color: var(--muted); font-size: 14px; gap: 10px; }
+.spinner { width: 20px; height: 20px; border: 2px solid var(--pink-mid); border-top-color: var(--pink-deep); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 15px; font-weight: 500; }
+.empty-sub { font-size: 13px; margin-top: 4px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--dark); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; z-index: 300; transition: transform 0.3s; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* FOOTER */
+footer { background: var(--dark); color: #9a9a9a; text-align: center; padding: 32px; font-size: 13px; margin-top: 60px; }
+footer .f-logo { font-size: 20px; font-weight: 800; color: white; margin-bottom: 8px; }
+footer .f-logo span { color: var(--lime); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+@media (max-width: 640px) {
+  nav { padding: 12px 16px; }
+  .section { padding: 48px 16px; }
+  .stats { flex-wrap: wrap; }
+  .stat { min-width: 100px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showPage('home')">Qvinty<span>.</span></div>
+  <div class="nav-right" id="navRight">
+    <button class="btn btn-outline" onclick="showPage('login')">Нэвтрэх</button>
+    <button class="btn btn-primary" onclick="showPage('register')">Дэлгүүр нээх</button>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-badge"><div class="dot"></div>Эхний 7 хоног үнэгүй</div>
+    <h1>Дэлгүүрээ <em>онлайн</em> болго</h1>
+    <p>Cafe, дэлгүүр, үйлчилгээний газруудад зориулсан хялбар платформ. Бараа, хуваарь, мэдээллээ нэг дор байршуул.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" style="padding:14px 32px;font-size:15px" onclick="showPage('register')">Үнэгүй эхлэх ↗</button>
+      <button class="btn btn-outline" style="padding:14px 32px;font-size:15px" onclick="showPage('browse')">Дэлгүүрүүд харах</button>
+    </div>
+    <div class="hero-note">Картаар төлбөр шаардахгүй · Эхний 7 хоног үнэгүй</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="statShops">0</div><div class="stat-label">Бүртгэлтэй дэлгүүр</div></div>
+    <div class="stat"><div class="stat-num">7 хоног</div><div class="stat-label">Үнэгүй туршилт</div></div>
+    <div class="stat"><div class="stat-num">МН / EN</div><div class="stat-label">Хос хэлтэй</div></div>
+    <div class="stat"><div class="stat-num">99.9%</div><div class="stat-label">Ажиллах хугацаа</div></div>
+  </div>
+
+  <div class="section section-center">
+    <div class="section-tag">АНГИЛАЛ</div>
+    <h2 class="section-title">Ямар бизнес вэ?</h2>
+    <p class="section-sub">Бүх төрлийн дэлгүүр, үйлчилгээний газруудад тохиромжтой</p>
+    <div class="cat-grid">
+      <div class="cat-card" onclick="browseCat('Cafe')"><div class="cat-icon">☕</div><div class="cat-name">Cafe & Рестораны</div><div class="cat-count" id="cnt-cafe">0 газар</div></div>
+      <div class="cat-card" onclick="browseCat('Хувцас')"><div class="cat-icon">👗</div><div class="cat-name">Хувцас & Загвар</div><div class="cat-count" id="cnt-fashion">0 дэлгүүр</div></div>
+      <div class="cat-card" onclick="browseCat('Гоо сайхан')"><div class="cat-icon">🌿</div><div class="cat-name">Гоо сайхан</div><div class="cat-count" id="cnt-beauty">0 газар</div></div>
+      <div class="cat-card" onclick="browseCat('Хүнс')"><div class="cat-icon">🛒</div><div class="cat-name">Хүнсний дэлгүүр</div><div class="cat-count" id="cnt-grocery">0 дэлгүүр</div></div>
+      <div class="cat-card" onclick="browseCat('Техник')"><div class="cat-icon">📱</div><div class="cat-name">Техник & Электрон</div><div class="cat-count" id="cnt-tech">0 дэлгүүр</div></div>
+      <div class="cat-card" onclick="browseCat('Гэр тавилга')"><div class="cat-icon">🏠</div><div class="cat-name">Гэр & Тавилга</div><div class="cat-count" id="cnt-home">0 дэлгүүр</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- BROWSE PAGE -->
+<div class="page" id="page-browse">
+  <div class="section">
+    <div class="section-tag">ДЭЛГҮҮРҮҮД</div>
+    <h2 class="section-title">Хайлт</h2>
+    <div class="filter-row" id="browseFilters">
+      <button class="filter-pill active" onclick="filterShops('all', this)">Бүгд</button>
+      <button class="filter-pill" onclick="filterShops('Cafe', this)">☕ Cafe</button>
+      <button class="filter-pill" onclick="filterShops('Хувцас', this)">👗 Хувцас</button>
+      <button class="filter-pill" onclick="filterShops('Гоо сайхан', this)">🌿 Гоо сайхан</button>
+      <button class="filter-pill" onclick="filterShops('Хүнс', this)">🛒 Хүнс</button>
+      <button class="filter-pill" onclick="filterShops('Техник', this)">📱 Техник</button>
+    </div>
+    <div class="shops-grid" id="shopsGrid">
+      <div class="loading"><div class="spinner"></div> Ачаалж байна...</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div class="page" id="page-login">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-title">Нэвтрэх</div>
+      <div class="auth-sub">Qvinty дансаараа нэвтэрнэ үү</div>
+      <div class="error-msg" id="loginError"></div>
+      <div class="form-group">
+        <label class="form-label">Имэйл</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Нууц үг</label>
+        <input class="form-input" type="password" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="login()">Нэвтрэх</button>
+      <div class="auth-switch">Данс байхгүй юу? <a onclick="showPage('register')">Бүртгүүл</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div class="page" id="page-register">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-title">Бүртгүүлэх</div>
+      <div class="auth-sub">Эхний 7 хоног үнэгүй · Картаар төлбөр шаардахгүй</div>
+      <div class="error-msg" id="registerError"></div>
+      <div class="success-msg" id="registerSuccess"></div>
+      <div class="form-group">
+        <label class="form-label">Нэр</label>
+        <input class="form-input" type="text" id="registerName" placeholder="Таны нэр">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Имэйл</label>
+        <input class="form-input" type="email" id="registerEmail" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Нууц үг</label>
+        <input class="form-input" type="password" id="registerPassword" placeholder="8+ тэмдэгт">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="register()">Бүртгүүлэх</button>
+      <div class="auth-switch">Данс байна уу? <a onclick="showPage('login')">Нэвтрэх</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+  <div class="dash-wrap">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Миний дэлгүүрүүд</div>
+        <div class="dash-sub" id="dashWelcome"></div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddShop()">+ Дэлгүүр нэмэх</button>
+    </div>
+    <div class="trial-banner">
+      <div>
+        <div class="trial-text">🎉 Эхний 7 хоног үнэгүй!</div>
+        <div class="trial-sub">Туршилтын хугацаанд бүх боломжийг ашиглаарай</div>
+      </div>
+      <button class="btn btn-sm btn-outline">Тарифаа сонго</button>
+    </div>
+    <div class="my-shops-grid" id="myShopsGrid">
+      <div class="loading"><div class="spinner"></div> Ачаалж байна...</div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP DETAIL PAGE -->
+<div class="page" id="page-shop">
+  <div class="shop-detail-wrap" id="shopDetailContent">
+    <div class="loading"><div class="spinner"></div> Ачаалж байна...</div>
+  </div>
+</div>
+
+<!-- ADD SHOP MODAL -->
+<div class="modal-overlay" id="addShopModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Дэлгүүр нэмэх</div>
+      <button class="modal-close" onclick="closeAddShop()">✕</button>
+    </div>
+    <div class="error-msg" id="shopError"></div>
+    <div class="form-group">
+      <label class="form-label">Дэлгүүрийн нэр *</label>
+      <input class="form-input" id="shopName" placeholder="жишээ нь: Sarnai Cafe">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ангилал *</label>
+      <select class="form-select" id="shopCategory">
+        <option value="">Сонгох...</option>
+        <option value="Cafe">☕ Cafe & Рестораны</option>
+        <option value="Хувцас">👗 Хувцас & Загвар</option>
+        <option value="Гоо сайхан">🌿 Гоо сайхан</option>
+        <option value="Хүнс">🛒 Хүнсний дэлгүүр</option>
+        <option value="Техник">📱 Техник & Электрон</option>
+        <option value="Гэр тавилга">🏠 Гэр & Тавилга</option>
+        <option value="Бусад">📦 Бусад</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Тайлбар</label>
+      <textarea class="form-textarea" id="shopDesc" placeholder="Дэлгүүрийн тухай товч мэдээлэл..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Хаяг</label>
+      <input class="form-input" id="shopAddress" placeholder="Дүүрэг, хороо, гудамж...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Утасны дугаар</label>
+      <input class="form-input" id="shopPhone" placeholder="9900-0000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Сошиал хаягууд</label>
+      <div class="social-grid">
+        <input class="form-input" id="shopIG" placeholder="📷 Instagram хаяг">
+        <input class="form-input" id="shopFB" placeholder="👤 Facebook хаяг">
+        <input class="form-input" id="shopTT" placeholder="🎵 TikTok хаяг">
+        <input class="form-input" id="shopX" placeholder="✕ X хаяг">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="addShop()" style="margin-top:8px">Дэлгүүр нэмэх</button>
+  </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal-overlay" id="addProductModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Бараа нэмэх</div>
+      <button class="modal-close" onclick="document.getElementById('addProductModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="error-msg" id="productError"></div>
+    <div class="form-group">
+      <label class="form-label">Барааны нэр *</label>
+      <input class="form-input" id="prodName" placeholder="жишээ нь: Latte тусгай">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Тайлбар</label>
+      <input class="form-input" id="prodDesc" placeholder="Барааны тайлбар...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Үнэ (₮) *</label>
+      <input class="form-input" type="number" id="prodPrice" placeholder="9000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Хямдруулаагүй үнэ (хоосон орхивол харагдахгүй)</label>
+      <input class="form-input" type="number" id="prodOrigPrice" placeholder="12000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Emoji дүрс</label>
+      <input class="form-input" id="prodEmoji" placeholder="☕" maxlength="4">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="addProduct()" style="margin-top:8px">Бараа нэмэх</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">Qvinty<span>.</span></div>
+  <div>Монголын дэлгүүр, үйлчилгээний газруудад зориулсан платформ</div>
+  <div style="margin-top:8px;font-size:12px;opacity:0.6">© 2025 Qvinty. Бүх эрх хуулиар хамгаалагдсан.</div>
+</footer>
+
+<script>
+// SUPABASE INIT
+const { createClient } = supabase;
+const sb = createClient(
+  'https://jsljvhzsuitawghvyipu.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbGp2aHpzdWl0YXdnaHZ5aXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDIyMjYsImV4cCI6MjA5NDU3ODIyNn0.VNpG6J9eng_joDuFATmOSEV3nWi1QCd3khjm42SyUmg'
+);
+
+let currentUser = null;
+let currentShopId = null;
+let allShops = [];
+
+const covers = ['c1','c2','c3','c4','c5'];
+const catEmojis = { 'Cafe':'☕', 'Хувцас':'👗', 'Гоо сайхан':'🌿', 'Хүнс':'🛒', 'Техник':'📱', 'Гэр тавилга':'🏠', 'Бусад':'📦' };
+
+// PAGE ROUTING
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'browse') loadShops();
+  if (name === 'home') loadStats();
+  if (name === 'dashboard') loadMyShops();
+}
+
+function updateNav() {
+  const nr = document.getElementById('navRight');
+  if (currentUser) {
+    nr.innerHTML = `
+      <span style="font-size:13px;color:var(--muted)">${currentUser.email}</span>
+      <button class="btn btn-lime btn-sm" onclick="showPage('dashboard')">Миний дэлгүүр</button>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Гарах</button>
+    `;
+  } else {
+    nr.innerHTML = `
+      <button class="btn btn-outline" onclick="showPage('login')">Нэвтрэх</button>
+      <button class="btn btn-primary" onclick="showPage('register')">Дэлгүүр нээх</button>
+    `;
+  }
+}
+
+// AUTH
+async function register() {
+  const name = document.getElementById('registerName').value.trim();
+  const email = document.getElementById('registerEmail').value.trim();
+  const pass = document.getElementById('registerPassword').value;
+  const err = document.getElementById('registerError');
+  const succ = document.getElementById('registerSuccess');
+  err.style.display = 'none'; succ.style.display = 'none';
+  if (!name || !email || !pass) { err.textContent = 'Бүх талбарыг бөглөнө үү.'; err.style.display = 'block'; return; }
+  if (pass.length < 6) { err.textContent = 'Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой.'; err.style.display = 'block'; return; }
+  const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name } } });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  succ.textContent = 'Амжилттай бүртгэгдлээ! Имэйлээ шалгаж баталгаажуулна уу.';
+  succ.style.display = 'block';
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { err.textContent = 'Имэйл эсвэл нууц үг буруу байна.'; err.style.display = 'block'; return; }
+  currentUser = data.user;
+  updateNav();
+  showPage('dashboard');
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  updateNav();
+  showPage('home');
+}
+
+// STATS
+async function loadStats() {
+  const { data } = await sb.from('shops').select('category');
+  if (!data) return;
+  document.getElementById('statShops').textContent = data.length + '+';
+  const cats = { cafe: 0, fashion: 0, beauty: 0, grocery: 0, tech: 0, home: 0 };
+  data.forEach(s => {
+    if (s.category === 'Cafe') cats.cafe++;
+    else if (s.category === 'Хувцас') cats.fashion++;
+    else if (s.category === 'Гоо сайхан') cats.beauty++;
+    else if (s.category === 'Хүнс') cats.grocery++;
+    else if (s.category === 'Техник') cats.tech++;
+    else if (s.category === 'Гэр тавилга') cats.home++;
+  });
+  document.getElementById('cnt-cafe').textContent = cats.cafe + ' газар';
+  document.getElementById('cnt-fashion').textContent = cats.fashion + ' дэлгүүр';
+  document.getElementById('cnt-beauty').textContent = cats.beauty + ' газар';
+  document.getElementById('cnt-grocery').textContent = cats.grocery + ' дэлгүүр';
+  document.getElementById('cnt-tech').textContent = cats.tech + ' дэлгүүр';
+  document.getElementById('cnt-home').textContent = cats.home + ' дэлгүүр';
+}
+
+// LOAD SHOPS
+async function loadShops(category = null) {
+  document.getElementById('shopsGrid').innerHTML = '<div class="loading"><div class="spinner"></div> Ачаалж байна...</div>';
+  let q = sb.from('shops').select('*').eq('is_active', true).order('created_at', { ascending: false });
+  if (category && category !== 'all') q = q.ilike('category', '%' + category + '%');
+  const { data } = await q;
+  allShops = data || [];
+  renderShops(allShops);
+}
+
+function renderShops(shops) {
+  const grid = document.getElementById('shopsGrid');
+  if (!shops.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div><div class="empty-text">Дэлгүүр олдсонгүй</div><div class="empty-sub">Эхний дэлгүүр бүртгүүл!</div></div>';
+    return;
+  }
+  grid.innerHTML = shops.map((s, i) => {
+    const cover = covers[i % covers.length];
+    const emoji = catEmojis[s.category] || '🏪';
+    const days = Math.floor((new Date(s.trial_ends_at) - new Date()) / 86400000);
+    const badge = days > 0 ? `<span class="shop-badge badge-trial">Туршилт</span>` : '';
+    return `
+      <div class="shop-card" onclick="viewShop('${s.id}')">
+        <div class="shop-cover ${cover}">${emoji}${badge}</div>
+        <div class="shop-info">
+          <div class="shop-name">${s.name}</div>
+          <div class="shop-cat">${s.category}${s.address ? ' · ' + s.address : ''}</div>
+          <div class="shop-meta">
+            <span class="shop-rating">★ Шинэ</span>
+            <span class="shop-addr">${s.phone || ''}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterShops(cat, el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  if (cat === 'all') renderShops(allShops);
+  else renderShops(allShops.filter(s => s.category.includes(cat)));
+}
+
+function browseCat(cat) {
+  showPage('browse');
+  loadShops(cat);
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    p.classList.toggle('active', p.textContent.includes(cat));
+  });
+}
+
+// VIEW SHOP
+async function viewShop(shopId) {
+  currentShopId = shopId;
+  showPage('shop');
+  const { data: shop } = await sb.from('shops').select('*').eq('id', shopId).single();
+  const { data: products } = await sb.from('products').select('*').eq('shop_id', shopId).eq('is_available', true);
+  const emoji = catEmojis[shop.category] || '🏪';
+  const coverIdx = Math.abs(shopId.charCodeAt(0) - 97) % covers.length;
+  const isOwner = currentUser && currentUser.id === shop.owner_id;
+
+  const days = ['Даваа','Мягмар','Лхагва','Пүрэв','Баасан','Бямба','Ням'];
+  const today = new Date().getDay();
+  const schedHtml = days.map((d, i) => {
+    const isToday = (i + 1) % 7 === today % 7;
+    return `<div class="sched-row ${isToday ? 'today' : ''}">
+      <span class="sched-day">${d}${isToday ? ' (өнөөдөр)' : ''}</span>
+      ${i === 6 ? '<span class="sched-closed">Амарна</span>' : '<span class="sched-time">09:00 – 21:00</span>'}
+    </div>`;
+  }).join('');
+
+  const prodsHtml = products && products.length ? products.map(p => `
+    <div class="prod-card">
+      <div class="prod-img">${p.emoji || '🛍'}${p.original_price ? '<span class="prod-sale-tag">Хямдрал</span>' : ''}</div>
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-desc">${p.description || ''}</div>
+        <div class="prod-footer">
+          <div><span class="prod-price">₮${p.price.toLocaleString()}</span>${p.original_price ? `<span class="prod-orig">₮${p.original_price.toLocaleString()}</span>` : ''}</div>
+          <button class="add-btn" onclick="showToast('Сагсанд нэмэгдлээ 🛒')">+</button>
+        </div>
+      </div>
+    </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Бараа байхгүй байна</div></div>';
+
+  const socials = [
+    shop.instagram ? `<a class="social-btn" href="${shop.instagram}" target="_blank">📷 Instagram</a>` : '',
+    shop.facebook ? `<a class="social-btn" href="${shop.facebook}" target="_blank">👤 Facebook</a>` : '',
+    shop.tiktok ? `<a class="social-btn" href="${shop.tiktok}" target="_blank">🎵 TikTok</a>` : '',
+    shop.x_twitter ? `<a class="social-btn" href="${shop.x_twitter}" target="_blank">✕ X</a>` : '',
+  ].filter(Boolean).join('');
+
+  document.getElementById('shopDetailContent').innerHTML = `
+    <button class="btn btn-outline btn-sm" onclick="showPage('browse')" style="margin-bottom:16px">← Буцах</button>
+    <div class="detail-cover ${covers[coverIdx]}">${emoji}</div>
+    <div class="detail-header">
+      <div class="detail-name">${shop.name}</div>
+      <div class="detail-meta">
+        <span>📂 ${shop.category}</span>
+        ${shop.address ? `<span>📍 ${shop.address}</span>` : ''}
+        ${shop.phone ? `<span>📞 ${shop.phone}</span>` : ''}
+      </div>
+      ${shop.description ? `<p style="margin-top:10px;font-size:14px;color:var(--muted)">${shop.description}</p>` : ''}
+      ${socials ? `<div class="detail-socials">${socials}</div>` : ''}
+      ${isOwner ? `<div style="margin-top:14px"><button class="btn btn-lime btn-sm" onclick="document.getElementById('addProductModal').classList.add('open')">+ Бараа нэмэх</button></div>` : ''}
+    </div>
+    <div class="detail-tabs">
+      <button class="detail-tab active" onclick="switchTab('products', this)">Бараа бүтээгдэхүүн</button>
+      <button class="detail-tab" onclick="switchTab('schedule', this)">Ажиллах хуваарь</button>
+      <button class="detail-tab" onclick="switchTab('delivery', this)">Хүргэлт</button>
+      <button class="detail-tab" onclick="switchTab('info', this)">Мэдээлэл</button>
+    </div>
+    <div class="tab-pane active" id="tab-products">
+      <div class="prod-grid">${prodsHtml}</div>
+    </div>
+    <div class="tab-pane" id="tab-schedule">
+      <div class="sched-table">${schedHtml}</div>
+    </div>
+    <div class="tab-pane" id="tab-delivery">
+      <div class="delivery-grid">
+        <div class="delivery-card"><div class="del-icon">🛵</div><div class="del-title">Хурдан хүргэлт</div><div class="del-desc">30-45 минутын дотор хүргэнэ</div><div class="del-price">₮3,000 / захиалга</div></div>
+        <div class="delivery-card"><div class="del-icon">🚶</div><div class="del-title">Өөрөө авах</div><div class="del-desc">15 минутын дотор бэлдэж өгнө</div><div class="del-price">Үнэгүй</div></div>
+        <div class="delivery-card"><div class="del-icon">📦</div><div class="del-title">Урьдчилсан захиалга</div><div class="del-desc">Үйл явдал, уулзалтад зориулан</div><div class="del-price">Тохиролцоно</div></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tab-info">
+      <div style="max-width:500px">
+        ${shop.description ? `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ТУХАЙ</div><div>${shop.description}</div></div>` : ''}
+        ${shop.address ? `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ХАЯГ</div><div>${shop.address}</div></div>` : ''}
+        ${shop.phone ? `<div><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ХОЛБОО БАРИХ</div><div>📞 ${shop.phone}</div></div>` : ''}
+      </div>
+    </div>`;
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+// DASHBOARD
+async function loadMyShops() {
+  if (!currentUser) { showPage('login'); return; }
+  document.getElementById('dashWelcome').textContent = currentUser.email;
+  const { data } = await sb.from('shops').select('*').eq('owner_id', currentUser.id).order('created_at', { ascending: false });
+  const grid = document.getElementById('myShopsGrid');
+  if (!data || !data.length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div><div class="empty-text">Дэлгүүр байхгүй байна</div><div class="empty-sub">Дээрх товчоор дэлгүүрээ нэмэрэй</div></div>';
+    return;
+  }
+  grid.innerHTML = data.map(s => {
+    const days = Math.floor((new Date(s.trial_ends_at) - new Date()) / 86400000);
+    const trialText = days > 0 ? `${days} хоног үнэгүй үлдсэн` : 'Туршилт дууссан';
+    return `
+      <div class="my-shop-card">
+        <div class="my-shop-top">
+          <div>
+            <div class="my-shop-name">${catEmojis[s.category] || '🏪'} ${s.name}</div>
+            <div class="my-shop-cat">${s.category} · ${trialText}</div>
+          </div>
+          <span class="plan-badge">${s.plan}</span>
+        </div>
+        ${s.address ? `<div style="font-size:13px;color:var(--muted)">📍 ${s.address}</div>` : ''}
+        <div class="my-shop-actions">
+          <button class="btn btn-outline btn-sm" onclick="viewShop('${s.id}')">Харах</button>
+          <button class="btn btn-lime btn-sm" onclick="currentShopId='${s.id}';document.getElementById('addProductModal').classList.add('open')">+ Бараа</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteShop('${s.id}')">Устгах</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ADD SHOP
+function openAddShop() {
+  if (!currentUser) { showPage('login'); return; }
+  document.getElementById('addShopModal').classList.add('open');
+}
+function closeAddShop() { document.getElementById('addShopModal').classList.remove('open'); }
+
+async function addShop() {
+  const name = document.getElementById('shopName').value.trim();
+  const category = document.getElementById('shopCategory').value;
+  const err = document.getElementById('shopError');
+  err.style.display = 'none';
+  if (!name || !category) { err.textContent = 'Нэр болон ангиллыг заавал бөглөнө үү.'; err.style.display = 'block'; return; }
+  const { error } = await sb.from('shops').insert({
+    owner_id: currentUser.id,
+    name,
+    category,
+    description: document.getElementById('shopDesc').value.trim(),
+    address: document.getElementById('shopAddress').value.trim(),
+    phone: document.getElementById('shopPhone').value.trim(),
+    instagram: document.getElementById('shopIG').value.trim(),
+    facebook: document.getElementById('shopFB').value.trim(),
+    tiktok: document.getElementById('shopTT').value.trim(),
+    x_twitter: document.getElementById('shopX').value.trim(),
+  });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  closeAddShop();
+  showToast('Дэлгүүр амжилттай нэмэгдлээ! 🎉');
+  loadMyShops();
+}
+
+async function deleteShop(id) {
+  if (!confirm('Дэлгүүрийг устгах уу?')) return;
+  await sb.from('shops').delete().eq('id', id);
+  showToast('Дэлгүүр устгагдлаа');
+  loadMyShops();
+}
+
+// ADD PRODUCT
+async function addProduct() {
+  const name = document.getElementById('prodName').value.trim();
+  const price = parseInt(document.getElementById('prodPrice').value);
+  const err = document.getElementById('productError');
+  err.style.display = 'none';
+  if (!name || !price) { err.textContent = 'Нэр болон үнийг заавал бөглөнө үү.'; err.style.display = 'block'; return; }
+  const origPrice = parseInt(document.getElementById('prodOrigPrice').value) || null;
+  const { error } = await sb.from('products').insert({
+    shop_id: currentShopId,
+    name,
+    description: document.getElementById('prodDesc').value.trim(),
+    price,
+    original_price: origPrice,
+    emoji: document.getElementById('prodEmoji').value || '🛍',
+  });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  document.getElementById('addProductModal').classList.remove('open');
+  showToast('Бараа амжилттай нэмэгдлээ! ✅');
+  if (document.getElementById('page-shop').classList.contains('active')) viewShop(currentShopId);
+}
+
+// TOAST
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// SESSION CHECK
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    updateNav();
+  }
+  sb.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    updateNav();
+  });
+  loadStats();
+}
+
+init();
+</script>
+</body>
+</html>
