@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopBase — Дэлгүүрээ онлайн болго</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink-light: #FDE5E8;
+    --pink-mid: #E7B4B9;
+    --pink-deep: #A4565C;
+    --lime: #E8F0A2;
+    --olive: #999D4F;
+    --white: #FFFDF9;
+    --dark: #1C1A18;
+    --text: #3A3330;
+    --muted: #7A6E6B;
+    --radius: 14px;
+    --radius-lg: 22px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--white);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(255,253,249,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--pink-mid);
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--pink-deep);
+    letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--olive); }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a {
+    text-decoration: none; font-size: 14px; font-weight: 500;
+    color: var(--muted); transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--pink-deep); }
+  .nav-right { display: flex; gap: 10px; align-items: center; }
+  .lang-btn {
+    display: flex; border: 1px solid var(--pink-mid); border-radius: 20px; overflow: hidden;
+  }
+  .lang-btn button {
+    padding: 5px 12px; font-size: 12px; font-weight: 500;
+    background: transparent; border: none; cursor: pointer;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s, color 0.2s;
+  }
+  .lang-btn button.active { background: var(--pink-deep); color: white; }
+  .btn-nav {
+    padding: 9px 20px; border-radius: 30px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-outline { border: 1px solid var(--pink-deep); background: transparent; color: var(--pink-deep); }
+  .btn-outline:hover { background: var(--pink-light); }
+  .btn-solid { border: none; background: var(--pink-deep); color: white; }
+  .btn-solid:hover { background: var(--A4565C); opacity: 0.9; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 40px 60px;
+    background: linear-gradient(160deg, var(--pink-light) 0%, var(--white) 55%, var(--lime) 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 420px; height: 420px; border-radius: 50%;
+    background: radial-gradient(circle, var(--pink-mid) 0%, transparent 70%);
+    opacity: 0.35;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -60px; left: -60px;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, var(--lime) 0%, transparent 70%);
+    opacity: 0.5;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid var(--pink-mid);
+    border-radius: 30px; padding: 6px 16px;
+    font-size: 12px; font-weight: 500; color: var(--pink-deep);
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--olive); }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 68px);
+    font-weight: 700; line-height: 1.15;
+    color: var(--dark); max-width: 780px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 em { color: var(--pink-deep); font-style: normal; }
+  .hero p {
+    margin-top: 20px; font-size: 17px; color: var(--muted);
+    max-width: 520px; line-height: 1.7;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .hero-btns {
+    display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .btn-hero {
+    padding: 14px 32px; border-radius: 30px; font-size: 15px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-hero-primary { background: var(--pink-deep); color: white; border: none; box-shadow: 0 4px 20px rgba(164,86,92,0.3); }
+  .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(164,86,92,0.35); }
+  .btn-hero-secondary { background: white; color: var(--text); border: 1px solid var(--pink-mid); }
+  .btn-hero-secondary:hover { background: var(--pink-light); }
+  .hero-note { margin-top: 16px; font-size: 13px; color: var(--olive); font-weight: 500;
+    animation: fadeUp 0.6s 0.4s ease both; }
+
+  /* STATS */
+  .stats {
+    display: flex; justify-content: center; gap: 0;
+    border-top: 1px solid var(--pink-mid); border-bottom: 1px solid var(--pink-mid);
+    background: white;
+  }
+  .stat-item {
+    flex: 1; max-width: 200px; text-align: center; padding: 28px 20px;
+    border-right: 1px solid var(--pink-mid);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--pink-deep); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* SECTION */
+  section { padding: 80px 40px; }
+  .section-tag {
+    display: inline-block; background: var(--lime); color: var(--olive);
+    font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4vw, 40px); font-weight: 700;
+    color: var(--dark); line-height: 1.2; margin-bottom: 8px;
+  }
+  .section-sub { color: var(--muted); font-size: 15px; max-width: 500px; }
+
+  /* CATEGORIES */
+  .categories-section { background: var(--pink-light); }
+  .cat-header { text-align: center; margin-bottom: 48px; }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; max-width: 1100px; margin: 0 auto; }
+  .cat-card {
+    background: white; border-radius: var(--radius-lg);
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .cat-card::before {
+    content: ''; position: absolute; inset: 0; border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--pink-light), transparent);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .cat-card:hover { transform: translateY(-4px); border-color: var(--pink-mid); box-shadow: 0 8px 24px rgba(164,86,92,0.1); }
+  .cat-card:hover::before { opacity: 1; }
+  .cat-icon { font-size: 36px; margin-bottom: 12px; }
+  .cat-name { font-size: 14px; font-weight: 500; color: var(--dark); }
+  .cat-count { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* FILTERS */
+  .filters-section { background: white; }
+  .filters-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+  .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-tab {
+    padding: 8px 18px; border-radius: 30px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--pink-mid); background: transparent;
+    color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .filter-tab.active, .filter-tab:hover { background: var(--pink-deep); color: white; border-color: var(--pink-deep); }
+
+  /* SHOP CARDS */
+  .shops-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; }
+  .shop-card {
+    background: white; border-radius: var(--radius-lg);
+    border: 1px solid var(--pink-mid);
+    overflow: hidden; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .shop-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(164,86,92,0.12); }
+  .shop-cover {
+    height: 140px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .shop-cover.pink { background: linear-gradient(135deg, var(--pink-light), var(--pink-mid)); }
+  .shop-cover.lime { background: linear-gradient(135deg, var(--lime), #c8d870); }
+  .shop-cover.warm { background: linear-gradient(135deg, #FFF3E0, #FFD9A0); }
+  .shop-cover.sage { background: linear-gradient(135deg, #E8F0E0, #C5D9A0); }
+  .shop-badge {
+    position: absolute; top: 10px; right: 10px;
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  }
+  .badge-trend { background: var(--pink-deep); color: white; }
+  .badge-sale { background: var(--olive); color: white; }
+  .badge-new { background: var(--lime); color: var(--olive); }
+  .shop-info { padding: 16px; }
+  .shop-name { font-weight: 500; font-size: 15px; color: var(--dark); }
+  .shop-cat { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .shop-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .shop-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--olive); font-weight: 500; }
+  .shop-orders { font-size: 12px; color: var(--muted); }
+
+  /* SALE SECTION */
+  .sale-section { background: linear-gradient(135deg, var(--pink-deep) 0%, #7a3840 100%); }
+  .sale-section .section-tag { background: var(--lime); color: var(--olive); }
+  .sale-section .section-title { color: white; }
+  .sale-section .section-sub { color: var(--pink-light); }
+  .sale-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; max-width: 1100px; margin: 32px auto 0; }
+  .sale-card {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--radius); padding: 20px;
+    backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s;
+  }
+  .sale-card:hover { background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+  .sale-shop { font-size: 28px; margin-bottom: 10px; }
+  .sale-name { font-weight: 500; color: white; font-size: 14px; }
+  .sale-orig { font-size: 12px; color: var(--pink-light); text-decoration: line-through; margin-top: 8px; }
+  .sale-price { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--lime); }
+  .sale-off { display: inline-block; background: var(--lime); color: var(--olive); font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 10px; margin-top: 6px; }
+
+  /* HOW IT WORKS */
+  .how-section { background: var(--white); }
+  .how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; max-width: 1000px; margin: 48px auto 0; }
+  .how-step { text-align: center; }
+  .how-num {
+    width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700;
+    color: var(--pink-deep); border: 2px solid var(--pink-mid);
+    background: var(--pink-light);
+  }
+  .how-step h3 { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+  .how-step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* PRICING TEASER */
+  .pricing-section { background: var(--lime); }
+  .pricing-section .section-title { color: var(--dark); }
+  .pricing-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; max-width: 900px; margin: 40px auto 0; }
+  .price-card {
+    background: white; border-radius: var(--radius-lg); padding: 28px 24px;
+    border: 1px solid rgba(153,157,79,0.3);
+    transition: all 0.2s;
+  }
+  .price-card.featured { border: 2px solid var(--pink-deep); position: relative; }
+  .featured-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--pink-deep); color: white; font-size: 11px; font-weight: 500;
+    padding: 4px 16px; border-radius: 20px; white-space: nowrap;
+  }
+  .price-name { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .price-amount { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: var(--dark); margin: 8px 0 4px; }
+  .price-period { font-size: 13px; color: var(--muted); }
+  .price-features { list-style: none; margin: 20px 0; }
+  .price-features li { font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--pink-light); display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .price-features li:last-child { border-bottom: none; }
+  .price-features li::before { content: '✓'; color: var(--olive); font-weight: 700; }
+  .price-btn {
+    width: 100%; padding: 12px; border-radius: 30px; font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .price-btn-outline { background: transparent; border: 1px solid var(--pink-deep); color: var(--pink-deep); }
+  .price-btn-outline:hover { background: var(--pink-light); }
+  .price-btn-fill { background: var(--pink-deep); color: white; border: none; }
+  .price-btn-fill:hover { opacity: 0.9; }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark); color: var(--pink-light);
+    padding: 60px 40px 32px;
+  }
+  .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .footer-logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: white; margin-bottom: 12px; }
+  .footer-logo span { color: var(--lime); }
+  .footer-desc { font-size: 13px; color: #9a9a9a; line-height: 1.7; }
+  .footer-col h4 { font-size: 13px; font-weight: 500; color: white; margin-bottom: 14px; }
+  .footer-col a { display: block; font-size: 13px; color: #9a9a9a; text-decoration: none; margin-bottom: 8px; transition: color 0.2s; }
+  .footer-col a:hover { color: var(--pink-mid); }
+  .footer-bottom { border-top: 1px solid #333; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .footer-copy { font-size: 12px; color: #666; }
+  .footer-social { display: flex; gap: 12px; }
+  .social-icon {
+    width: 34px; height: 34px; border-radius: 50%; border: 1px solid #444;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; transition: all 0.2s; text-decoration: none; color: #9a9a9a;
+  }
+  .social-icon:hover { border-color: var(--pink-mid); color: var(--pink-mid); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 12px 20px; }
+    .nav-links { display: none; }
+    section { padding: 60px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .stats { flex-wrap: wrap; }
+    .stat-item { flex: 1; min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Shop<span>Base</span></div>
+  <div class="nav-links">
+    <a href="#categories">Ангилал</a>
+    <a href="#shops">Дэлгүүрүүд</a>
+    <a href="#sale">Хямдрал</a>
+    <a href="#pricing">Үнэ</a>
+  </div>
+  <div class="nav-right">
+    <div class="lang-btn">
+      <button class="active" onclick="setLang('mn')">МН</button>
+      <button onclick="setLang('en')">EN</button>
+    </div>
+    <a href="#" class="btn-nav btn-outline" data-mn="Нэвтрэх" data-en="Sign in">Нэвтрэх</a>
+    <a href="#pricing" class="btn-nav btn-solid" data-mn="Дэлгүүр нээх" data-en="Open store">Дэлгүүр нээх</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><div class="dot"></div><span data-mn="Эхний 7 хоног үнэгүй" data-en="First 7 days free">Эхний 7 хоног үнэгүй</span></div>
+  <h1 data-mn="Дэлгүүрээ <em>онлайн</em> болго" data-en="Bring your <em>store</em> online">Дэлгүүрээ <em>онлайн</em> болго</h1>
+  <p data-mn="Cafe, дэлгүүр, үйлчилгээний газруудад зориулсан хялбар платформ. Бараа, хуваарь, мэдээллээ нэг дор байршуул." data-en="Simple platform for cafes, shops and service businesses. List your products, schedule and info all in one place.">Cafe, дэлгүүр, үйлчилгээний газруудад зориулсан хялбар платформ. Бараа, хуваарь, мэдээллээ нэг дор байршуул.</p>
+  <div class="hero-btns">
+    <a href="#pricing" class="btn-hero btn-hero-primary" data-mn="Үнэгүй эхлэх" data-en="Start free">Үнэгүй эхлэх</a>
+    <a href="#shops" class="btn-hero btn-hero-secondary" data-mn="Дэлгүүрүүд харах" data-en="Browse stores">Дэлгүүрүүд харах</a>
+  </div>
+  <div class="hero-note" data-mn="Картаар төлбөр шаардахгүй • Эхний 7 хоног үнэгүй" data-en="No card required • First 7 days free">Картаар төлбөр шаардахгүй • Эхний 7 хоног үнэгүй</div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item"><div class="stat-num">1,200+</div><div class="stat-label" data-mn="Бүртгэлтэй дэлгүүр" data-en="Registered stores">Бүртгэлтэй дэлгүүр</div></div>
+  <div class="stat-item"><div class="stat-num">48K+</div><div class="stat-label" data-mn="Сарын хэрэглэгч" data-en="Monthly users">Сарын хэрэглэгч</div></div>
+  <div class="stat-item"><div class="stat-num">4.9 ⭐</div><div class="stat-label" data-mn="Дундаж үнэлгээ" data-en="Average rating">Дундаж үнэлгээ</div></div>
+  <div class="stat-item"><div class="stat-num">99.9%</div><div class="stat-label" data-mn="Ажиллах хугацаа" data-en="Uptime">Ажиллах хугацаа</div></div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="categories-section" id="categories">
+  <div class="cat-header">
+    <div class="section-tag" data-mn="АНГИЛАЛ" data-en="CATEGORIES">АНГИЛАЛ</div>
+    <h2 class="section-title" data-mn="Ямар бизнес вэ?" data-en="What kind of business?">Ямар бизнес вэ?</h2>
+    <p class="section-sub" data-mn="Бүх төрлийн дэлгүүр, үйлчилгээний газруудад тохиромжтой" data-en="Suitable for all types of stores and service businesses">Бүх төрлийн дэлгүүр, үйлчилгээний газруудад тохиромжтой</p>
+  </div>
+  <div class="cat-grid">
+    <div class="cat-card"><div class="cat-icon">☕</div><div class="cat-name" data-mn="Cafe & Рестораны" data-en="Cafe & Restaurant">Cafe & Рестораны</div><div class="cat-count" data-mn="284 газар" data-en="284 places">284 газар</div></div>
+    <div class="cat-card"><div class="cat-icon">👗</div><div class="cat-name" data-mn="Хувцас & Загвар" data-en="Fashion & Clothing">Хувцас & Загвар</div><div class="cat-count" data-mn="196 дэлгүүр" data-en="196 stores">196 дэлгүүр</div></div>
+    <div class="cat-card"><div class="cat-icon">🌿</div><div class="cat-name" data-mn="Гоо сайхан" data-en="Beauty & Care">Гоо сайхан</div><div class="cat-count" data-mn="143 газар" data-en="143 places">143 газар</div></div>
+    <div class="cat-card"><div class="cat-icon">🛒</div><div class="cat-name" data-mn="Хүнсний дэлгүүр" data-en="Grocery">Хүнсний дэлгүүр</div><div class="cat-count" data-mn="211 дэлгүүр" data-en="211 stores">211 дэлгүүр</div></div>
+    <div class="cat-card"><div class="cat-icon">📱</div><div class="cat-name" data-mn="Техник & Электрон" data-en="Tech & Electronics">Техник & Электрон</div><div class="cat-count" data-mn="88 дэлгүүр" data-en="88 stores">88 дэлгүүр</div></div>
+    <div class="cat-card"><div class="cat-icon">🏠</div><div class="cat-name" data-mn="Гэр, тавилга" data-en="Home & Furniture">Гэр, тавилга</div><div class="cat-count" data-mn="122 дэлгүүр" data-en="122 stores">122 дэлгүүр</div></div>
+  </div>
+</section>
+
+<!-- SHOPS -->
+<section class="filters-section" id="shops">
+  <div class="filters-header">
+    <div>
+      <div class="section-tag" data-mn="ДЭЛГҮҮРҮҮД" data-en="STORES">ДЭЛГҮҮРҮҮД</div>
+      <h2 class="section-title" data-mn="Хайлт" data-en="Search stores">Хайлт</h2>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-mn="Трэнд" data-en="Trending">Трэнд</button>
+      <button class="filter-tab" data-mn="Хамгийн их хандалт" data-en="Most visited">Хамгийн их хандалт</button>
+      <button class="filter-tab" data-mn="Шинэ" data-en="New">Шинэ</button>
+      <button class="filter-tab" data-mn="Хямдрал" data-en="On sale">Хямдрал</button>
+    </div>
+  </div>
+  <div class="shops-grid">
+    <div class="shop-card">
+      <div class="shop-cover pink">☕<span class="shop-badge badge-trend" data-mn="Трэнд" data-en="Trending">Трэнд</span></div>
+      <div class="shop-info">
+        <div class="shop-name">Sarnai Cafe</div>
+        <div class="shop-cat" data-mn="Cafe • Сүхбаатар дүүрэг" data-en="Cafe • Sukhbaatar">Cafe • Сүхбаатар дүүрэг</div>
+        <div class="shop-meta"><span class="shop-rating">★ 4.9</span><span class="shop-orders" data-mn="1.2K захиалга" data-en="1.2K orders">1.2K захиалга</span></div>
+      </div>
+    </div>
+    <div class="shop-card">
+      <div class="shop-cover lime">👗<span class="shop-badge badge-new" data-mn="Шинэ" data-en="New">Шинэ</span></div>
+      <div class="shop-info">
+        <div class="shop-name">Nomad Style</div>
+        <div class="shop-cat" data-mn="Хувцас • Чингэлтэй дүүрэг" data-en="Fashion • Chingeltei">Хувцас • Чингэлтэй дүүрэг</div>
+        <div class="shop-meta"><span class="shop-rating">★ 4.7</span><span class="shop-orders" data-mn="840 захиалга" data-en="840 orders">840 захиалга</span></div>
+      </div>
+    </div>
+    <div class="shop-card">
+      <div class="shop-cover warm">🌿<span class="shop-badge badge-trend" data-mn="Трэнд" data-en="Trending">Трэнд</span></div>
+      <div class="shop-info">
+        <div class="shop-name">Glow Beauty</div>
+        <div class="shop-cat" data-mn="Гоо сайхан • Баянзүрх дүүрэг" data-en="Beauty • Bayanzurkh">Гоо сайхан • Баянзүрх дүүрэг</div>
+        <div class="shop-meta"><span class="shop-rating">★ 4.8</span><span class="shop-orders" data-mn="620 захиалга" data-en="620 orders">620 захиалга</span></div>
+      </div>
+    </div>
+    <div class="shop-card">
+      <div class="shop-cover sage">🛒<span class="shop-badge badge-sale" data-mn="Хямдрал" data-en="Sale">Хямдрал</span></div>
+      <div class="shop-info">
+        <div class="shop-name">Fresh Market</div>
+        <div class="shop-cat" data-mn="Хүнс • Хан-Уул дүүрэг" data-en="Grocery • Khan-Uul">Хүнс • Хан-Уул дүүрэг</div>
+        <div class="shop-meta"><span class="shop-rating">★ 4.6</span><span class="shop-orders" data-mn="2.1K захиалга" data-en="2.1K orders">2.1K захиалга</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SALE -->
+<section class="sale-section" id="sale">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="section-tag" data-mn="ОНЦГОЙ ХЯМДРАЛ" data-en="SPECIAL OFFERS">ОНЦГОЙ ХЯМДРАЛ</div>
+    <h2 class="section-title" data-mn="Өнөөдрийн хямдрал" data-en="Today's deals">Өнөөдрийн хямдрал</h2>
+    <p class="section-sub" data-mn="Хугацаатай тул яараарай. Одоо ав!" data-en="Time limited. Get it now!">Хугацаатай тул яараарай. Одоо ав!</p>
+    <div class="sale-grid">
+      <div class="sale-card">
+        <div class="sale-shop">☕</div>
+        <div class="sale-name">Latte тусгай — Sarnai Cafe</div>
+        <div class="sale-orig">₮ 9,000</div>
+        <div class="sale-price">₮ 6,300</div>
+        <div class="sale-off">-30%</div>
+      </div>
+      <div class="sale-card">
+        <div class="sale-shop">👗</div>
+        <div class="sale-name">Зуны цуглуулга — Nomad Style</div>
+        <div class="sale-orig">₮ 85,000</div>
+        <div class="sale-price">₮ 59,500</div>
+        <div class="sale-off">-30%</div>
+      </div>
+      <div class="sale-card">
+        <div class="sale-shop">🌿</div>
+        <div class="sale-name">Арьс арчилгааны багц — Glow</div>
+        <div class="sale-orig">₮ 42,000</div>
+        <div class="sale-price">₮ 29,400</div>
+        <div class="sale-off">-30%</div>
+      </div>
+      <div class="sale-card">
+        <div class="sale-shop">🛒</div>
+        <div class="sale-name">Органик хүнс — Fresh Market</div>
+        <div class="sale-orig">₮ 24,000</div>
+        <div class="sale-price">₮ 16,800</div>
+        <div class="sale-off">-30%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div style="text-align:center; max-width:1100px; margin:0 auto;">
+    <div class="section-tag" data-mn="ХЭРХЭН АЖИЛДАГ ВЭ?" data-en="HOW IT WORKS">ХЭРХЭН АЖИЛДАГ ВЭ?</div>
+    <h2 class="section-title" data-mn="3 алхамд бэлэн болно" data-en="Ready in 3 steps">3 алхамд бэлэн болно</h2>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-num">1</div><h3 data-mn="Бүртгүүл" data-en="Sign up">Бүртгүүл</h3><p data-mn="Имэйл, утасны дугаараар хялбархан бүртгүүл. Картын мэдээлэл шаардахгүй." data-en="Register easily with email or phone. No card needed.">Имэйл, утасны дугаараар хялбархан бүртгүүл. Картын мэдээлэл шаардахгүй.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3 data-mn="Дэлгүүрийг тохируул" data-en="Set up your store">Дэлгүүрийг тохируул</h3><p data-mn="Барааны мэдээлэл, зураг, ажиллах цаг, сошиал холбоосоо нэм." data-en="Add products, photos, hours and social links.">Барааны мэдээлэл, зураг, ажиллах цаг, сошиал холбоосоо нэм.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3 data-mn="Хэрэглэгчид олоорой" data-en="Get customers">Хэрэглэгчид олоорой</h3><p data-mn="ShopBase-ийн хэрэглэгчид таны дэлгүүрийг олж, захиалга өгнө." data-en="ShopBase users find your store and place orders.">ShopBase-ийн хэрэглэгчид таны дэлгүүрийг олж, захиалга өгнө.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div style="text-align:center; max-width:1100px; margin:0 auto;">
+    <div class="section-tag" data-mn="ҮНИЙН САНАЛ" data-en="PRICING">ҮНИЙН САНАЛ</div>
+    <h2 class="section-title" data-mn="Бизнестээ тохирсон тарифыг сонго" data-en="Choose the right plan for your business">Бизнестээ тохирсон тарифыг сонго</h2>
+    <div class="pricing-cards">
+      <div class="price-card">
+        <div class="price-name" data-mn="Эхлэгч" data-en="Starter">Эхлэгч</div>
+        <div class="price-amount">₮10,000</div>
+        <div class="price-period" data-mn="/ сар" data-en="/ month">/ сар</div>
+        <ul class="price-features">
+          <li data-mn="1 дэлгүүрийн хуудас" data-en="1 store page">1 дэлгүүрийн хуудас</li>
+          <li data-mn="20 хүртэлх бараа" data-en="Up to 20 products">20 хүртэлх бараа</li>
+          <li data-mn="Ажиллах хуваарь" data-en="Working hours">Ажиллах хуваарь</li>
+          <li data-mn="Сошиал холбоос" data-en="Social links">Сошиал холбоос</li>
+        </ul>
+        <button class="price-btn price-btn-outline" data-mn="Эхлэх" data-en="Get started">Эхлэх</button>
+      </div>
+      <div class="price-card featured">
+        <div class="featured-badge" data-mn="Хамгийн их сонголт" data-en="Most popular">Хамгийн их сонголт</div>
+        <div class="price-name" data-mn="Бизнес" data-en="Business">Бизнес</div>
+        <div class="price-amount">₮20,000</div>
+        <div class="price-period" data-mn="/ сар" data-en="/ month">/ сар</div>
+        <ul class="price-features">
+          <li data-mn="Хязгааргүй бараа" data-en="Unlimited products">Хязгааргүй бараа</li>
+          <li data-mn="Хүргэлтийн мэдээлэл" data-en="Delivery info">Хүргэлтийн мэдээлэл</li>
+          <li data-mn="Монгол & Англи хэл" data-en="Mongolian & English">Монгол & Англи хэл</li>
+          <li data-mn="Статистик тайлан" data-en="Analytics">Статистик тайлан</li>
+          <li data-mn="Хямдралын хэсэг" data-en="Sale section">Хямдралын хэсэг</li>
+        </ul>
+        <button class="price-btn price-btn-fill" data-mn="7 хоног үнэгүй" data-en="7 days free">7 хоног үнэгүй</button>
+      </div>
+      <div class="price-card">
+        <div class="price-name" data-mn="Корпорат" data-en="Corporate">Корпорат</div>
+        <div class="price-amount">₮30,000</div>
+        <div class="price-period" data-mn="/ сар" data-en="/ month">/ сар</div>
+        <ul class="price-features">
+          <li data-mn="Хязгааргүй дэлгүүр" data-en="Unlimited stores">Хязгааргүй дэлгүүр</li>
+          <li data-mn="Дэвшилтэт статистик" data-en="Advanced analytics">Дэвшилтэт статистик</li>
+          <li data-mn="24/7 дэмжлэг" data-en="24/7 support">24/7 дэмжлэг</li>
+        </ul>
+        <button class="price-btn price-btn-outline" data-mn="Холбоо барих" data-en="Contact us">Холбоо барих</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">Shop<span>Base</span></div>
+      <div class="footer-desc" data-mn="Монголын онлайн дэлгүүр, үйлчилгээний газруудад зориулсан хялбар платформ." data-en="Simple platform for Mongolian online stores and service businesses.">Монголын онлайн дэлгүүр, үйлчилгээний газруудад зориулсан хялбар платформ.</div>
+    </div>
+    <div class="footer-col">
+      <h4 data-mn="Платформ" data-en="Platform">Платформ</h4>
+      <a href="#" data-mn="Яаж ажилдаг вэ" data-en="How it works">Яаж ажилдаг вэ</a>
+      <a href="#pricing" data-mn="Үнэ" data-en="Pricing">Үнэ</a>
+      <a href="#" data-mn="Дэлгүүр нээх" data-en="Open store">Дэлгүүр нээх</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-mn="Дэмжлэг" data-en="Support">Дэмжлэг</h4>
+      <a href="#" data-mn="Тусламж" data-en="Help center">Тусламж</a>
+      <a href="#" data-mn="Холбоо барих" data-en="Contact">Холбоо барих</a>
+      <a href="#" data-mn="Нөхцөл" data-en="Terms">Нөхцөл</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-mn="Биднийг дагаарай" data-en="Follow us">Биднийг дагаарай</h4>
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">TikTok</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 ShopBase. <span data-mn="Бүх эрх хуулиар хамгаалагдсан." data-en="All rights reserved.">Бүх эрх хуулиар хамгаалагдсан.</span></div>
+    <div class="footer-social">
+      <a class="social-icon" href="#">ig</a>
+      <a class="social-icon" href="#">fb</a>
+      <a class="social-icon" href="#">tt</a>
+      <a class="social-icon" href="#">𝕏</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  let currentLang = 'mn';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-btn button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.lang-btn button:${lang === 'mn' ? 'first-child' : 'last-child'}`).classList.add('active');
+    document.querySelectorAll('[data-mn]').forEach(el => {
+      const text = el.getAttribute('data-' + lang);
+      if (!text) return;
+      if (el.tagName === 'H1' || el.innerHTML.includes('<em>')) {
+        el.innerHTML = text;
+      } else {
+        el.textContent = text;
+      }
+    });
+  }
+
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
