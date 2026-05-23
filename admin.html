@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin moderation — Qvinty</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --pink-light: #FDE5E8; --pink-mid: #E7B4B9; --pink-deep: #A4565C;
+  --lime: #E8F0A2; --olive: #999D4F; --white: #FFFDF9; --dark: #1C1A18;
+  --text: #3A3330; --muted: #7A6E6B; --radius: 14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; }
+nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: rgba(255,253,249,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid var(--pink-mid); }
+.logo { font-size: 22px; font-weight: 800; color: var(--pink-deep); text-decoration: none; letter-spacing: -1px; }
+.logo span { color: var(--olive); }
+.btn { padding: 8px 14px; border-radius: 24px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-outline { background: transparent; border: 1.5px solid var(--pink-deep); color: var(--pink-deep); }
+.btn-primary { background: var(--pink-deep); color: white; }
+.btn-lime { background: var(--lime); color: var(--olive); }
+.btn-danger { background: #fee2e2; color: #b91c1c; }
+.page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 56px; }
+.page-title { font-size: 28px; font-weight: 900; color: var(--dark); letter-spacing: -0.4px; }
+.page-sub { color: var(--muted); margin: 4px 0 24px; }
+.guard { background: #fff7ed; border: 1.5px solid #fed7aa; color: #9a3412; border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); padding: 16px; }
+.stat-num { font-size: 26px; font-weight: 900; color: var(--pink-deep); }
+.stat-label { font-size: 12px; color: var(--muted); }
+.tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--pink-mid); margin-bottom: 20px; overflow-x: auto; }
+.tab { padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2.5px solid transparent; white-space: nowrap; background: transparent; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+.tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+.panel { display: none; }
+.panel.active { display: block; }
+.toolbar { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.input { padding: 10px 12px; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); font: inherit; min-width: 220px; background: white; }
+.grid { display: grid; gap: 12px; }
+.card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); padding: 16px; }
+.card-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.card-title { font-size: 15px; font-weight: 800; color: var(--dark); }
+.meta { color: var(--muted); font-size: 12px; margin-top: 4px; word-break: break-word; }
+.badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 800; border: 1px solid transparent; }
+.badge-open { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.badge-ok { background: #dcfce7; color: #15803d; border-color: #86efac; }
+.badge-off { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.empty { text-align: center; color: var(--muted); padding: 48px 16px; border: 1.5px dashed var(--pink-mid); border-radius: var(--radius); background: white; }
+.loading { color: var(--muted); padding: 24px; }
+@media (max-width: 640px) {
+  nav { padding: 12px 16px; }
+  .page { padding: 24px 16px 44px; }
+  .card-top { display: block; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Qvinty<span>.</span></a>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <a href="index.html" class="btn btn-outline">← Site</a>
+    <button class="btn btn-primary" onclick="logout()">Гарах</button>
+  </div>
+</nav>
+
+<main class="page">
+  <h1 class="page-title">Admin moderation</h1>
+  <p class="page-sub">Report, scam seller, fake product, account deletion request, verification, audit logs шалгах хэсэг.</p>
+
+  <div id="guardBox" class="guard">Admin эрх шалгаж байна...</div>
+
+  <div id="adminApp" style="display:none">
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statReports">0</div><div class="stat-label">Open reports</div></div>
+      <div class="stat"><div class="stat-num" id="statShops">0</div><div class="stat-label">Active shops</div></div>
+      <div class="stat"><div class="stat-num" id="statProducts">0</div><div class="stat-label">Products</div></div>
+      <div class="stat"><div class="stat-num" id="statDelete">0</div><div class="stat-label">Delete requests</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchPanel('reports', this)">Reports</button>
+      <button class="tab" onclick="switchPanel('shops', this)">Businesses</button>
+      <button class="tab" onclick="switchPanel('products', this)">Products</button>
+      <button class="tab" onclick="switchPanel('refunds', this)">Refunds</button>
+      <button class="tab" onclick="switchPanel('comments', this)">Comments</button>
+      <button class="tab" onclick="switchPanel('deletions', this)">Account delete</button>
+      <button class="tab" onclick="switchPanel('audit', this)">Audit logs</button>
+    </div>
+
+    <section class="panel active" id="panel-reports">
+      <div class="toolbar">
+        <strong>Seller / scam / copyright / abuse reports</strong>
+        <button class="btn btn-outline" onclick="loadAdminData()">Refresh</button>
+      </div>
+      <div class="grid" id="reportsGrid"><div class="loading">Ачаалж байна...</div></div>
+    </section>
+
+    <section class="panel" id="panel-shops">
+      <div class="toolbar">
+        <strong>Business moderation & verification</strong>
+        <input class="input" id="shopSearch" placeholder="Дэлгүүр хайх" oninput="renderShops()">
+      </div>
+      <div class="grid" id="shopsGrid"></div>
+    </section>
+
+    <section class="panel" id="panel-products">
+      <div class="toolbar">
+        <strong>Product approve / reject / fake item hide</strong>
+        <input class="input" id="productSearch" placeholder="Бараа хайх" oninput="renderProducts()">
+      </div>
+      <div class="grid" id="productsGrid"></div>
+    </section>
+
+    <section class="panel" id="panel-deletions">
+      <div class="toolbar">
+        <strong>Account deletion requests</strong>
+        <span class="meta">Auth user-ийг Supabase Dashboard-аас гараар бүрмөсөн устгана.</span>
+      </div>
+      <div class="grid" id="deletionsGrid"></div>
+    </section>
+
+    <section class="panel" id="panel-refunds">
+      <div class="toolbar">
+        <strong>Refund approve / reject</strong>
+        <span class="meta">Платформ шууд payment хийхгүй тул энэ нь status moderation юм.</span>
+      </div>
+      <div class="grid" id="refundsGrid"></div>
+    </section>
+
+    <section class="panel" id="panel-comments">
+      <div class="toolbar">
+        <strong>Bad comment moderation</strong>
+        <span class="meta">Муу comment-ийг устгахын оронд hide болгоно.</span>
+      </div>
+      <div class="grid" id="commentsGrid"></div>
+    </section>
+
+    <section class="panel" id="panel-audit">
+      <div class="toolbar">
+        <strong>Audit logs</strong>
+        <span class="meta">Admin хэн юу хийснийг бүртгэнэ.</span>
+      </div>
+      <div class="grid" id="auditGrid"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://jsljvhzsuitawghvyipu.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbGp2aHpzdWl0YXdnaHZ5aXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDIyMjYsImV4cCI6MjA5NDU3ODIyNn0.VNpG6J9eng_joDuFATmOSEV3nWi1QCd3khjm42SyUmg'
+);
+
+let currentUser = null;
+let reports = [];
+let shops = [];
+let products = [];
+let deletions = [];
+let auditLogs = [];
+let refunds = [];
+let comments = [];
+
+function switchPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+function statusBadge(value) {
+  if (value === true || value === 'resolved' || value === 'approved' || value === 'completed') return '<span class="badge badge-ok">OK</span>';
+  if (value === false || value === 'rejected' || value === 'cancelled') return '<span class="badge badge-off">OFF</span>';
+  return `<span class="badge badge-open">${value || 'open'}</span>`;
+}
+
+async function logAction(action, targetType, targetId, metadata = {}) {
+  await sb.from('audit_logs').insert({
+    actor_id: currentUser.id,
+    action,
+    target_type: targetType,
+    target_id: targetId,
+    metadata
+  });
+}
+
+async function loadAdminData() {
+  const [reportRes, shopRes, productRes, deletionRes, refundRes, commentRes, auditRes] = await Promise.all([
+    sb.from('reports').select('*').order('created_at', { ascending: false }),
+    sb.from('shops').select('*').order('created_at', { ascending: false }),
+    sb.from('products').select('*, shops(name)').order('created_at', { ascending: false }),
+    sb.from('account_deletion_requests').select('*').order('requested_at', { ascending: false }),
+    sb.from('refund_requests').select('*, shops(name), products(name)').order('created_at', { ascending: false }),
+    sb.from('comments').select('*, shops(name), products(name)').order('created_at', { ascending: false }),
+    sb.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(80)
+  ]);
+
+  if (reportRes.error || shopRes.error || productRes.error || deletionRes.error || refundRes.error || commentRes.error || auditRes.error) {
+    document.getElementById('guardBox').style.display = 'block';
+    document.getElementById('guardBox').textContent = 'Admin data уншихад алдаа гарлаа. Supabase admin policies ажилласан эсэхийг шалгана уу.';
+    return;
+  }
+
+  reports = reportRes.data || [];
+  shops = shopRes.data || [];
+  products = productRes.data || [];
+  deletions = deletionRes.data || [];
+  refunds = refundRes.data || [];
+  comments = commentRes.data || [];
+  auditLogs = auditRes.data || [];
+
+  document.getElementById('statReports').textContent = reports.filter(r => r.status === 'open').length;
+  document.getElementById('statShops').textContent = shops.filter(s => s.is_active).length;
+  document.getElementById('statProducts').textContent = products.length;
+  document.getElementById('statDelete').textContent = deletions.filter(d => d.status === 'pending').length;
+
+  renderReports();
+  renderShops();
+  renderProducts();
+  renderRefunds();
+  renderComments();
+  renderDeletions();
+  renderAudit();
+}
+
+function renderReports() {
+  const grid = document.getElementById('reportsGrid');
+  if (!reports.length) { grid.innerHTML = '<div class="empty">Report байхгүй байна.</div>'; return; }
+  grid.innerHTML = reports.map(r => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${r.reason.toUpperCase()} report</div>
+          <div class="meta">${r.item_type} · ${r.item_id}</div>
+          <div class="meta">${r.details || 'Тайлбаргүй'} · ${new Date(r.created_at).toLocaleString()}</div>
+        </div>
+        ${statusBadge(r.status)}
+      </div>
+      <div class="actions">
+        <button class="btn btn-lime" onclick="resolveReport('${r.id}', 'reviewing')">Reviewing</button>
+        <button class="btn btn-primary" onclick="resolveReport('${r.id}', 'resolved')">Resolved</button>
+        <button class="btn btn-outline" onclick="resolveReport('${r.id}', 'rejected')">Reject report</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderShops() {
+  const query = (document.getElementById('shopSearch')?.value || '').toLowerCase();
+  const filtered = shops.filter(s => (s.name || '').toLowerCase().includes(query) || (s.category || '').toLowerCase().includes(query));
+  const grid = document.getElementById('shopsGrid');
+  if (!filtered.length) { grid.innerHTML = '<div class="empty">Дэлгүүр олдсонгүй.</div>'; return; }
+  grid.innerHTML = filtered.map(s => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${s.name}</div>
+          <div class="meta">${s.category} · ${s.email || ''}</div>
+          <div class="meta">${s.address || 'Хаяггүй'} · ${s.phone || 'Утасгүй'}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${statusBadge(s.is_active)}
+          ${s.is_verified ? '<span class="badge badge-ok">Verified</span>' : '<span class="badge badge-open">Unverified</span>'}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-lime" onclick="verifyShop('${s.id}')">Verify business</button>
+        <button class="btn btn-outline" onclick="toggleShop('${s.id}', ${!s.is_active})">${s.is_active ? 'Hide shop' : 'Restore shop'}</button>
+        <button class="btn btn-danger" onclick="toggleShop('${s.id}', false)">Scam seller устгах/нуух</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderProducts() {
+  const query = (document.getElementById('productSearch')?.value || '').toLowerCase();
+  const filtered = products.filter(p => (p.name || '').toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
+  const grid = document.getElementById('productsGrid');
+  if (!filtered.length) { grid.innerHTML = '<div class="empty">Бараа олдсонгүй.</div>'; return; }
+  grid.innerHTML = filtered.map(p => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${p.emoji || '🛍'} ${p.name}</div>
+          <div class="meta">${p.shops?.name || 'Unknown shop'} · ₮${Number(p.price || 0).toLocaleString()} · stock: ${p.stock_qty ?? '—'}</div>
+          <div class="meta">${p.description || 'Тайлбаргүй'}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${statusBadge(p.is_available)}
+          ${statusBadge(p.approval_status || 'pending')}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="setProductStatus('${p.id}', 'approved', true)">Approve</button>
+        <button class="btn btn-outline" onclick="setProductStatus('${p.id}', 'rejected', false)">Reject</button>
+        <button class="btn btn-danger" onclick="setProductStatus('${p.id}', 'fake_hidden', false)">Fake бараа нуух</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDeletions() {
+  const grid = document.getElementById('deletionsGrid');
+  if (!deletions.length) { grid.innerHTML = '<div class="empty">Account delete request байхгүй.</div>'; return; }
+  grid.innerHTML = deletions.map(d => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${d.email || d.user_id}</div>
+          <div class="meta">Requested: ${new Date(d.requested_at).toLocaleString()} · user: ${d.user_id || 'already removed'}</div>
+        </div>
+        ${statusBadge(d.status)}
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="completeDeletion('${d.id}', '${d.user_id || ''}')">Mark completed</button>
+        <button class="btn btn-outline" onclick="cancelDeletion('${d.id}')">Cancel</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderRefunds() {
+  const grid = document.getElementById('refundsGrid');
+  if (!refunds.length) { grid.innerHTML = '<div class="empty">Refund request байхгүй.</div>'; return; }
+  grid.innerHTML = refunds.map(r => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-title">₮${Number(r.amount || 0).toLocaleString()} refund</div>
+          <div class="meta">${r.shops?.name || 'Unknown shop'} · ${r.products?.name || 'No product'}</div>
+          <div class="meta">${r.reason || 'Тайлбаргүй'} · ${new Date(r.created_at).toLocaleString()}</div>
+        </div>
+        ${statusBadge(r.status)}
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="decideRefund('${r.id}', 'approved')">Approve</button>
+        <button class="btn btn-outline" onclick="decideRefund('${r.id}', 'rejected')">Reject</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderComments() {
+  const grid = document.getElementById('commentsGrid');
+  if (!comments.length) { grid.innerHTML = '<div class="empty">Comment байхгүй.</div>'; return; }
+  grid.innerHTML = comments.map(c => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${c.rating || '—'}★ ${c.shops?.name || c.products?.name || 'Comment'}</div>
+          <div class="meta">${c.body}</div>
+          <div class="meta">${new Date(c.created_at).toLocaleString()}</div>
+        </div>
+        ${statusBadge(c.is_visible)}
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" onclick="toggleComment('${c.id}', true)">Restore</button>
+        <button class="btn btn-danger" onclick="toggleComment('${c.id}', false)">Hide bad comment</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAudit() {
+  const grid = document.getElementById('auditGrid');
+  if (!auditLogs.length) { grid.innerHTML = '<div class="empty">Audit log хоосон байна.</div>'; return; }
+  grid.innerHTML = auditLogs.map(a => `
+    <div class="card">
+      <div class="card-title">${a.action}</div>
+      <div class="meta">${a.target_type || 'system'} · ${a.target_id || ''}</div>
+      <div class="meta">${new Date(a.created_at).toLocaleString()} · actor: ${a.actor_id || 'unknown'}</div>
+    </div>
+  `).join('');
+}
+
+async function resolveReport(id, status) {
+  await sb.from('reports').update({ status }).eq('id', id);
+  await logAction('report_' + status, 'report', id);
+  await loadAdminData();
+}
+
+async function verifyShop(id) {
+  await sb.from('shops').update({ is_verified: true, phone_verified: true, email_verified: true, social_verified: true }).eq('id', id);
+  await logAction('verify_business', 'shop', id);
+  await loadAdminData();
+}
+
+async function toggleShop(id, isActive) {
+  await sb.from('shops').update({ is_active: isActive }).eq('id', id);
+  await logAction(isActive ? 'restore_shop' : 'hide_shop', 'shop', id);
+  await loadAdminData();
+}
+
+async function setProductStatus(id, approvalStatus, isAvailable) {
+  await sb.from('products').update({ approval_status: approvalStatus, is_available: isAvailable }).eq('id', id);
+  await logAction('product_' + approvalStatus, 'product', id);
+  await loadAdminData();
+}
+
+async function decideRefund(id, status) {
+  const note = prompt('Admin note бичих үү?', status) || status;
+  await sb.from('refund_requests').update({ status, admin_note: note, decided_at: new Date().toISOString() }).eq('id', id);
+  await logAction('refund_' + status, 'refund_request', id, { note });
+  await loadAdminData();
+}
+
+async function toggleComment(id, isVisible) {
+  await sb.from('comments').update({ is_visible: isVisible }).eq('id', id);
+  await logAction(isVisible ? 'restore_comment' : 'hide_comment', 'comment', id);
+  await loadAdminData();
+}
+
+async function completeDeletion(id, userId) {
+  await sb.from('account_deletion_requests').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', id);
+  if (userId) await sb.from('profiles').update({ deletion_requested: true }).eq('id', userId);
+  await logAction('account_delete_completed', 'account_deletion_request', id, { user_id: userId });
+  alert('Completed гэж тэмдэглэлээ. Auth user-ийг Supabase Dashboard > Authentication хэсгээс гараар устгана.');
+  await loadAdminData();
+}
+
+async function cancelDeletion(id) {
+  await sb.from('account_deletion_requests').update({ status: 'cancelled' }).eq('id', id);
+  await logAction('account_delete_cancelled', 'account_deletion_request', id);
+  await loadAdminData();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    document.getElementById('guardBox').textContent = 'Admin panel ашиглахын тулд эхлээд index.html дээр нэвтэрнэ үү.';
+    return;
+  }
+  currentUser = session.user;
+  const { data, error } = await sb.from('admin_users').select('user_id').eq('user_id', currentUser.id).maybeSingle();
+  if (error || !data) {
+    document.getElementById('guardBox').textContent = 'Энэ account admin эрхгүй байна. Supabase admin_users table-д user_id-гаа нэмнэ.';
+    return;
+  }
+  document.getElementById('guardBox').style.display = 'none';
+  document.getElementById('adminApp').style.display = 'block';
+  await loadAdminData();
+}
+
+init();
+</script>
+</body>
+</html>

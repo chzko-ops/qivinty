@@ -1,12 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="mn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qvinty — Дэлгүүрээ онлайн болго</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>    
-  
+<style>
 :root {
   --pink-light: #FDE5E8;
   --pink-mid: #E7B4B9;
@@ -90,9 +89,12 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; a
 .shop-cover.c4 { background: linear-gradient(135deg, #E8F0E0, #C5D9A0); }
 .shop-cover.c5 { background: linear-gradient(135deg, #f3e5f5, #ce93d8); }
 .shop-badge { position: absolute; top: 10px; right: 10px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.shop-badge-left { left: 10px; right: auto; }
 .badge-trend { background: var(--pink-deep); color: white; }
 .badge-new { background: var(--lime); color: var(--olive); }
 .badge-trial { background: var(--olive); color: white; }
+.badge-verified { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.badge-stock { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
 .shop-info { padding: 14px; }
 .shop-name { font-weight: 700; font-size: 15px; color: var(--dark); }
 .shop-cat { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -168,7 +170,9 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; a
 .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
 .prod-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); overflow: hidden; }
 .prod-img { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 44px; background: var(--pink-light); position: relative; }
+.prod-img.has-photo { background-size: cover; background-position: center; color: transparent; }
 .prod-sale-tag { position: absolute; top: 8px; left: 8px; background: var(--pink-deep); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.prod-stock-tag { position: absolute; right: 8px; bottom: 8px; background: #fff7ed; color: #c2410c; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; border: 1px solid #fed7aa; }
 .prod-info { padding: 12px; }
 .prod-name { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 3px; }
 .prod-desc { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
@@ -209,10 +213,29 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; a
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--dark); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; z-index: 300; transition: transform 0.3s; white-space: nowrap; }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
+/* TRUST / POLICY */
+.feature-band { background: #f7f7ee; border-top: 1px solid var(--pink-mid); border-bottom: 1px solid var(--pink-mid); }
+.donation-grid, .policy-grid, .notification-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 28px; }
+.info-card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); padding: 18px; text-align: left; }
+.info-kicker { font-size: 11px; font-weight: 800; color: var(--olive); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.info-title { font-size: 16px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+.info-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.price-amount { font-size: 24px; font-weight: 900; color: var(--pink-deep); }
+.save-note { display: inline-block; margin-top: 10px; background: var(--lime); color: var(--olive); border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 700; }
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.policy-list { display: grid; gap: 10px; font-size: 13px; color: var(--muted); }
+.policy-list strong { color: var(--dark); }
+.map-box { margin-top: 10px; height: 170px; border-radius: var(--radius); border: 1.5px solid var(--pink-mid); background: var(--pink-light); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; text-align: center; padding: 16px; }
+.report-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.report-btn { border: 1px solid #fecaca; color: #b91c1c; background: #fff5f5; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
 /* FOOTER */
 footer { background: var(--dark); color: #9a9a9a; text-align: center; padding: 32px; font-size: 13px; margin-top: 60px; }
 footer .f-logo { font-size: 20px; font-weight: 800; color: white; margin-bottom: 8px; }
 footer .f-logo span { color: var(--lime); }
+footer .footer-links { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+footer .footer-links a { color: #d8d8d8; text-decoration: none; font-size: 12px; }
+footer .footer-note { max-width: 760px; margin: 14px auto 0; font-size: 12px; line-height: 1.6; opacity: 0.72; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -267,6 +290,57 @@ footer .f-logo span { color: var(--lime); }
       <div class="cat-card" onclick="browseCat('Хүнс')"><div class="cat-icon">🛒</div><div class="cat-name">Хүнсний дэлгүүр</div><div class="cat-count" id="cnt-grocery">0 дэлгүүр</div></div>
       <div class="cat-card" onclick="browseCat('Техник')"><div class="cat-icon">📱</div><div class="cat-name">Техник & Электрон</div><div class="cat-count" id="cnt-tech">0 дэлгүүр</div></div>
       <div class="cat-card" onclick="browseCat('Гэр тавилга')"><div class="cat-icon">🏠</div><div class="cat-name">Гэр & Тавилга</div><div class="cat-count" id="cnt-home">0 дэлгүүр</div></div>
+    </div>
+  </div>
+
+  <div class="feature-band">
+    <div class="section section-center">
+      <div class="section-tag">ХАНДИВ & SAVING</div>
+      <h2 class="section-title">Бүртгэл бүрээс сайн үйлсэд</h2>
+      <p class="section-sub">Дэлгүүр бүртгүүлэх төлбөрийн тодорхой хэсгийг хорт хавдартай тэмцэж буй хүмүүст хандивлана.</p>
+      <div class="donation-grid">
+        <div class="info-card">
+          <div class="info-kicker">Starter</div>
+          <div class="price-amount">₮5,000</div>
+          <div class="info-desc">1 бүртгэлээс ₮1,000 хандивлана.</div>
+          <span class="save-note">Saving: ₮4,000</span>
+        </div>
+        <div class="info-card">
+          <div class="info-kicker">Growth</div>
+          <div class="price-amount">₮10,000</div>
+          <div class="info-desc">1 бүртгэлээс ₮2,000 хандивлана.</div>
+          <span class="save-note">Saving: ₮8,000</span>
+        </div>
+        <div class="info-card">
+          <div class="info-kicker">Pro</div>
+          <div class="price-amount">₮15,000</div>
+          <div class="info-desc">1 бүртгэлээс ₮3,000 хандивлана.</div>
+          <span class="save-note">Saving: ₮12,000</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section section-center">
+    <div class="section-tag">ИТГЭЛЦЭЛ</div>
+    <h2 class="section-title">Хэрэглэгч, дэлгүүр хоёрт хэрэгтэй хамгаалалтууд</h2>
+    <div class="policy-grid">
+      <div class="info-card">
+        <div class="info-title">Wishlist / Save later</div>
+        <div class="info-desc">Хүмүүс шууд авахгүй үедээ дэлгүүр, бараагаа хадгалж дараа нь дахин харна.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-title">Verified Business</div>
+        <div class="info-desc">Утас, имэйл, сошиал хаягаа баталгаажуулсан бизнесүүдэд тэмдэг харагдана.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-title">Report center</div>
+        <div class="info-desc">Scam, copyright, abuse report илгээх товчтой. Одоогоор report-ыг admin гараар шалгаж устгана.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-title">Notification center</div>
+        <div class="info-desc">Order update, discount alert, business update зэрэг мэдэгдлийн суурь UI бэлэн.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -352,7 +426,19 @@ footer .f-logo span { color: var(--lime); }
         <div class="trial-text">🎉 Эхний 7 хоног үнэгүй!</div>
         <div class="trial-sub">Туршилтын хугацаанд бүх боломжийг ашиглаарай</div>
       </div>
-      <button class="btn btn-sm btn-outline">Тарифаа сонго</button>
+      <a class="btn btn-sm btn-outline" href="account.html">Тохиргоо / Privacy</a>
+    </div>
+    <div class="notification-grid" style="margin-bottom:20px">
+      <div class="info-card">
+        <div class="info-kicker">Notification center</div>
+        <div class="info-title">Мэдэгдэл</div>
+        <div class="info-desc">Order update, discount alert, report status зэрэг мэдэгдлүүд энд харагдана.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-kicker">Admin moderation</div>
+        <div class="info-title">Report шалгах суурь</div>
+        <div class="info-desc">Scam seller, fake бараа, copyright, abuse report-уудыг Supabase table-д хадгалах schema нэмэгдсэн.</div>
+      </div>
     </div>
     <div class="my-shops-grid" id="myShopsGrid">
       <div class="loading"><div class="spinner"></div> Ачаалж байна...</div>
@@ -405,6 +491,18 @@ footer .f-logo span { color: var(--lime); }
       <input class="form-input" id="shopPhone" placeholder="9900-0000">
     </div>
     <div class="form-group">
+      <label class="form-label">Газрын зураг / Google Maps холбоос</label>
+      <input class="form-input" id="shopMapUrl" placeholder="https://maps.google.com/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Буцаалт ба refund policy</label>
+      <textarea class="form-textarea" id="shopRefundPolicy" placeholder="Жишээ: 3 хоногийн дотор буцаалт авна. Ашигласан/эвдэрсэн бараанд refund өгөхгүй."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Хүргэлтийн төлбөрийн нөхцөл</label>
+      <input class="form-input" id="shopShippingPolicy" placeholder="Жишээ: Хүргэлтийн төлбөрийг хэрэглэгч төлнө / дэлгүүр дээр ирж авна">
+    </div>
+    <div class="form-group">
       <label class="form-label">Сошиал хаягууд</label>
       <div class="social-grid">
         <input class="form-input" id="shopIG" placeholder="📷 Instagram хаяг">
@@ -445,6 +543,14 @@ footer .f-logo span { color: var(--lime); }
       <label class="form-label">Emoji дүрс</label>
       <input class="form-input" id="prodEmoji" placeholder="☕" maxlength="4">
     </div>
+    <div class="form-group">
+      <label class="form-label">Зургийн холбоос</label>
+      <input class="form-input" id="prodImageUrl" placeholder="https://.../zurag.jpg">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Үлдэгдэл тоо</label>
+      <input class="form-input" type="number" id="prodStockQty" placeholder="2">
+    </div>
     <button class="btn btn-primary btn-block" onclick="addProduct()" style="margin-top:8px">Бараа нэмэх</button>
   </div>
 </div>
@@ -456,7 +562,15 @@ footer .f-logo span { color: var(--lime); }
 <footer>
   <div class="f-logo">Qvinty<span>.</span></div>
   <div>Монголын дэлгүүр, үйлчилгээний газруудад зориулсан платформ</div>
-  <div style="margin-top:8px;font-size:12px;opacity:0.6">© 2025 Qvinty. Бүх эрх хуулиар хамгаалагдсан.</div>
+  <div class="footer-links">
+    <a href="account.html">Terms & Conditions</a>
+    <a href="account.html">Privacy</a>
+    <a href="account.html">Delete account</a>
+    <a href="admin.html">Admin moderation</a>
+  </div>
+  <div class="footer-note">Qvinty нь мэдээллийн платформ бөгөөд дэлгүүр, cafe, business-ийн бүтээгдэхүүн, үйлчилгээ, хүргэлт, refund болон хэрэглэгч-бизнесийн хооронд үүсэх маргаанд шууд хариуцлага хүлээхгүй.</div>
+  <div class="footer-note">Бүртгэл бүрээс тодорхой хэсгийг хорт хавдартай тэмцэж буй хүмүүст хандивлах санаачилгыг дэмждэг. Энэ санааг “Уран сайхны кино”-оос авсан credit-ийг энд хадгалав.</div>
+  <div style="margin-top:8px;font-size:12px;opacity:0.6">© 2026 Qvinty. Бүх эрх хуулиар хамгаалагдсан.</div>
 </footer>
 
 <script>
@@ -489,6 +603,8 @@ function updateNav() {
   if (currentUser) {
     nr.innerHTML = `
       <span style="font-size:13px;color:var(--muted)">${currentUser.email}</span>
+      <a class="btn btn-outline btn-sm" href="account.html">Тохиргоо</a>
+      <a class="btn btn-outline btn-sm" href="admin.html">Admin</a>
       <button class="btn btn-lime btn-sm" onclick="showPage('dashboard')">Миний дэлгүүр</button>
       <button class="btn btn-outline btn-sm" onclick="logout()">Гарах</button>
     `;
@@ -578,9 +694,10 @@ function renderShops(shops) {
     const emoji = catEmojis[s.category] || '🏪';
     const days = Math.floor((new Date(s.trial_ends_at) - new Date()) / 86400000);
     const badge = days > 0 ? `<span class="shop-badge badge-trial">Туршилт</span>` : '';
+    const verified = s.is_verified ? `<span class="shop-badge shop-badge-left badge-verified">Verified</span>` : '';
     return `
       <div class="shop-card" onclick="viewShop('${s.id}')">
-        <div class="shop-cover ${cover}">${emoji}${badge}</div>
+        <div class="shop-cover ${cover}">${emoji}${badge}${verified}</div>
         <div class="shop-info">
           <div class="shop-name">${s.name}</div>
           <div class="shop-cat">${s.category}${s.address ? ' · ' + s.address : ''}</div>
@@ -628,18 +745,22 @@ async function viewShop(shopId) {
     </div>`;
   }).join('');
 
-  const prodsHtml = products && products.length ? products.map(p => `
+  const prodsHtml = products && products.length ? products.map(p => {
+    const lowStock = Number.isFinite(p.stock_qty) && p.stock_qty > 0 && p.stock_qty <= 2;
+    const imageStyle = p.image_url ? ` style="background-image:url('${p.image_url.replace(/'/g, "%27")}')"` : '';
+    return `
     <div class="prod-card">
-      <div class="prod-img">${p.emoji || '🛍'}${p.original_price ? '<span class="prod-sale-tag">Хямдрал</span>' : ''}</div>
+      <div class="prod-img ${p.image_url ? 'has-photo' : ''}"${imageStyle}>${p.image_url ? '' : (p.emoji || '🛍')}${p.original_price ? '<span class="prod-sale-tag">Хямдрал</span>' : ''}${lowStock ? `<span class="prod-stock-tag">Only ${p.stock_qty} left</span>` : ''}</div>
       <div class="prod-info">
         <div class="prod-name">${p.name}</div>
         <div class="prod-desc">${p.description || ''}</div>
         <div class="prod-footer">
           <div><span class="prod-price">₮${p.price.toLocaleString()}</span>${p.original_price ? `<span class="prod-orig">₮${p.original_price.toLocaleString()}</span>` : ''}</div>
-          <button class="add-btn" onclick="showToast('Сагсанд нэмэгдлээ 🛒')">+</button>
+          <button class="add-btn" onclick="event.stopPropagation(); saveForLater('${p.id}', '${p.name.replace(/'/g, "\\'")}')">♡</button>
         </div>
       </div>
-    </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Бараа байхгүй байна</div></div>';
+    </div>`;
+  }).join('') : '<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">Бараа байхгүй байна</div></div>';
 
   const socials = [
     shop.instagram ? `<a class="social-btn" href="${shop.instagram}" target="_blank">📷 Instagram</a>` : '',
@@ -660,12 +781,19 @@ async function viewShop(shopId) {
       </div>
       ${shop.description ? `<p style="margin-top:10px;font-size:14px;color:var(--muted)">${shop.description}</p>` : ''}
       ${socials ? `<div class="detail-socials">${socials}</div>` : ''}
+      <div class="detail-actions">
+        <button class="btn btn-outline btn-sm" onclick="saveShop('${shop.id}', '${shop.name.replace(/'/g, "\\'")}')">♡ Save for later</button>
+        <button class="btn btn-danger btn-sm" onclick="reportItem('shop', '${shop.id}', 'scam')">Scam report</button>
+        <button class="btn btn-danger btn-sm" onclick="reportItem('shop', '${shop.id}', 'copyright')">Copyright report</button>
+        <button class="btn btn-danger btn-sm" onclick="reportItem('shop', '${shop.id}', 'abuse')">Abuse report</button>
+      </div>
       ${isOwner ? `<div style="margin-top:14px"><button class="btn btn-lime btn-sm" onclick="document.getElementById('addProductModal').classList.add('open')">+ Бараа нэмэх</button></div>` : ''}
     </div>
     <div class="detail-tabs">
       <button class="detail-tab active" onclick="switchTab('products', this)">Бараа бүтээгдэхүүн</button>
       <button class="detail-tab" onclick="switchTab('schedule', this)">Ажиллах хуваарь</button>
       <button class="detail-tab" onclick="switchTab('delivery', this)">Хүргэлт</button>
+      <button class="detail-tab" onclick="switchTab('policy', this)">Буцаалт</button>
       <button class="detail-tab" onclick="switchTab('info', this)">Мэдээлэл</button>
     </div>
     <div class="tab-pane active" id="tab-products">
@@ -676,9 +804,19 @@ async function viewShop(shopId) {
     </div>
     <div class="tab-pane" id="tab-delivery">
       <div class="delivery-grid">
-        <div class="delivery-card"><div class="del-icon">🛵</div><div class="del-title">Хурдан хүргэлт</div><div class="del-desc">30-45 минутын дотор хүргэнэ</div><div class="del-price">₮3,000 / захиалга</div></div>
+        <div class="delivery-card"><div class="del-icon">🛵</div><div class="del-title">Хурдан хүргэлт</div><div class="del-desc">${shop.shipping_policy || '30-45 минутын дотор хүргэнэ. Хүргэлттэй дэлгүүр бол нөхцөлөө тусгай бөглөнө.'}</div><div class="del-price">Дэлгүүрийн нөхцлөөр</div></div>
         <div class="delivery-card"><div class="del-icon">🚶</div><div class="del-title">Өөрөө авах</div><div class="del-desc">15 минутын дотор бэлдэж өгнө</div><div class="del-price">Үнэгүй</div></div>
         <div class="delivery-card"><div class="del-icon">📦</div><div class="del-title">Урьдчилсан захиалга</div><div class="del-desc">Үйл явдал, уулзалтад зориулан</div><div class="del-price">Тохиролцоно</div></div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tab-policy">
+      <div class="info-card">
+        <div class="info-title">Буцаалт ба refund policy</div>
+        <div class="policy-list">
+          <div><strong>Хэд хоногийн дотор:</strong> ${shop.return_days ? `${shop.return_days} хоног` : 'Дэлгүүр өөрийн мэдээлэл хэсэгт зааж өгнө.'}</div>
+          <div><strong>Refund өгөхгүй нөхцөл:</strong> ${shop.refund_policy || 'Ашигласан, гэмтээсэн, бүрэн бус савлагаатай, эсвэл дэлгүүрийн нөхцөлд нийцээгүй бараанд refund өгөхгүй байж болно.'}</div>
+          <div><strong>Shipping fee:</strong> ${shop.shipping_policy || 'Хүргэлтийн төлбөрийг хэн төлөхийг тухайн дэлгүүр тусгайлан бичнэ. Хүргэлтгүй бол заавал бөглөх шаардлагагүй.'}</div>
+        </div>
       </div>
     </div>
     <div class="tab-pane" id="tab-info">
@@ -686,6 +824,12 @@ async function viewShop(shopId) {
         ${shop.description ? `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ТУХАЙ</div><div>${shop.description}</div></div>` : ''}
         ${shop.address ? `<div style="margin-bottom:20px"><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ХАЯГ</div><div>${shop.address}</div></div>` : ''}
         ${shop.phone ? `<div><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ХОЛБОО БАРИХ</div><div>📞 ${shop.phone}</div></div>` : ''}
+        ${shop.map_url ? `<div style="margin-top:20px"><a class="btn btn-outline btn-sm" href="${shop.map_url}" target="_blank">Google Maps дээр харах</a></div>` : '<div class="map-box">Газрын зураг / Google Maps холбоос нэмэгдээгүй байна.</div>'}
+        <div class="report-row">
+          <button class="report-btn" onclick="reportItem('shop', '${shop.id}', 'scam')">Scam report</button>
+          <button class="report-btn" onclick="reportItem('shop', '${shop.id}', 'copyright')">Copyright report</button>
+          <button class="report-btn" onclick="reportItem('shop', '${shop.id}', 'abuse')">Abuse report</button>
+        </div>
       </div>
     </div>`;
 }
@@ -749,6 +893,9 @@ async function addShop() {
     description: document.getElementById('shopDesc').value.trim(),
     address: document.getElementById('shopAddress').value.trim(),
     phone: document.getElementById('shopPhone').value.trim(),
+    map_url: document.getElementById('shopMapUrl').value.trim(),
+    refund_policy: document.getElementById('shopRefundPolicy').value.trim(),
+    shipping_policy: document.getElementById('shopShippingPolicy').value.trim(),
     instagram: document.getElementById('shopIG').value.trim(),
     facebook: document.getElementById('shopFB').value.trim(),
     tiktok: document.getElementById('shopTT').value.trim(),
@@ -775,6 +922,7 @@ async function addProduct() {
   err.style.display = 'none';
   if (!name || !price) { err.textContent = 'Нэр болон үнийг заавал бөглөнө үү.'; err.style.display = 'block'; return; }
   const origPrice = parseInt(document.getElementById('prodOrigPrice').value) || null;
+  const stockQty = parseInt(document.getElementById('prodStockQty').value);
   const { error } = await sb.from('products').insert({
     shop_id: currentShopId,
     name,
@@ -782,6 +930,8 @@ async function addProduct() {
     price,
     original_price: origPrice,
     emoji: document.getElementById('prodEmoji').value || '🛍',
+    image_url: document.getElementById('prodImageUrl').value.trim(),
+    stock_qty: Number.isFinite(stockQty) ? stockQty : null,
   });
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
   document.getElementById('addProductModal').classList.remove('open');
@@ -795,6 +945,52 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function saveShop(shopId, name) {
+  if (!currentUser) { showPage('login'); return; }
+  const { error } = await sb.from('wishlists').insert({
+    user_id: currentUser.id,
+    item_type: 'shop',
+    shop_id: shopId
+  });
+  if (error && !error.message.includes('duplicate')) {
+    showToast('Wishlist хадгалахад алдаа гарлаа');
+    return;
+  }
+  showToast(`${name} хадгалагдлаа`);
+}
+
+async function saveForLater(productId, name) {
+  if (!currentUser) { showPage('login'); return; }
+  const { error } = await sb.from('wishlists').insert({
+    user_id: currentUser.id,
+    item_type: 'product',
+    product_id: productId
+  });
+  if (error && !error.message.includes('duplicate')) {
+    showToast('Save for later алдаа гарлаа');
+    return;
+  }
+  showToast(`${name} хадгалагдлаа`);
+}
+
+async function reportItem(itemType, itemId, reason) {
+  const details = prompt('Report-ийн товч тайлбар бичнэ үү:');
+  if (details === null) return;
+  const payload = {
+    reporter_id: currentUser?.id || null,
+    item_type: itemType,
+    item_id: itemId,
+    reason,
+    details
+  };
+  const { error } = await sb.from('reports').insert(payload);
+  if (error) {
+    showToast('Report илгээхэд алдаа гарлаа');
+    return;
+  }
+  showToast('Report илгээгдлээ. Admin гараар шалгана.');
 }
 
 // SESSION CHECK
@@ -815,3 +1011,4 @@ init();
 </script>
 </body>
 </html>
+

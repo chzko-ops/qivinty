@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тохиргоо — Qvinty</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --pink-light: #FDE5E8; --pink-mid: #E7B4B9; --pink-deep: #A4565C;
+  --lime: #E8F0A2; --olive: #999D4F; --white: #FFFDF9; --dark: #1C1A18;
+  --text: #3A3330; --muted: #7A6E6B; --radius: 14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; background: rgba(255,253,249,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--pink-mid); }
+.logo { font-size: 22px; font-weight: 800; color: var(--pink-deep); letter-spacing: -1px; cursor: pointer; text-decoration: none; }
+.logo span { color: var(--olive); }
+.btn { padding: 9px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s; text-decoration: none; display: inline-block; }
+.btn-outline { background: transparent; border: 1.5px solid var(--pink-deep); color: var(--pink-deep); }
+.btn-outline:hover { background: var(--pink-light); }
+.btn-primary { background: var(--pink-deep); color: white; }
+.btn-danger { background: #dc2626; color: white; }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+
+.page { padding: 80px 24px 40px; max-width: 900px; margin: 0 auto; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+.page-sub { color: var(--muted); margin-bottom: 32px; }
+
+.tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--pink-mid); margin-bottom: 28px; overflow-x: auto; }
+.tab { padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 2.5px solid transparent; white-space: nowrap; background: transparent; border-top: none; border-left: none; border-right: none; font-family: inherit; transition: all 0.2s; }
+.tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.card { background: white; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.card-desc { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
+.form-input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--pink-mid); border-radius: var(--radius); font-size: 14px; font-family: inherit; background: var(--white); color: var(--text); transition: border-color 0.2s; outline: none; }
+.form-input:focus { border-color: var(--pink-deep); }
+.form-checkbox { display: flex; align-items: flex-start; gap: 10px; margin: 12px 0; }
+.form-checkbox input { margin-top: 4px; }
+.form-checkbox label { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+.alert { padding: 12px 16px; border-radius: var(--radius); font-size: 13px; margin-bottom: 16px; }
+.alert-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+.alert-success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.alert-info { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+
+.terms-content { font-size: 14px; line-height: 1.7; }
+.terms-content h3 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; color: var(--dark); }
+.terms-content h3:first-child { margin-top: 0; }
+.terms-content p { margin-bottom: 12px; }
+.terms-content ul { margin-left: 20px; margin-bottom: 12px; }
+.terms-content li { margin-bottom: 6px; }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.mini-card { background: var(--white); border: 1px solid var(--pink-mid); border-radius: var(--radius); padding: 16px; }
+.mini-card-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+.mini-card p { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+
+.danger-zone { border: 2px solid #dc2626; border-radius: var(--radius); padding: 20px; background: #fef2f2; }
+.danger-zone-title { font-size: 15px; font-weight: 700; color: #dc2626; margin-bottom: 8px; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(28,26,24,0.5); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: var(--radius); padding: 28px; width: 100%; max-width: 460px; }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--dark); }
+.modal-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions .btn { flex: 1; }
+
+@media (max-width: 640px) {
+  nav { padding: 12px 16px; }
+  .page { padding: 70px 16px 32px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Qvinty<span>.</span></a>
+  <div>
+    <a href="index.html" class="btn btn-outline btn-sm">← Буцах</a>
+    <button class="btn btn-primary btn-sm" onclick="logout()">Гарах</button>
+  </div>
+</nav>
+
+<div class="page">
+  <h1 class="page-title">Тохиргоо</h1>
+  <p class="page-sub">Таны хувийн мэдээлэл болон аюулгүй байдлын тохиргоо</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('profile', this)">Хувийн мэдээлэл</button>
+    <button class="tab" onclick="switchTab('privacy', this)">Нууцлал</button>
+    <button class="tab" onclick="switchTab('terms', this)">Үйлчилгээний нөхцөл</button>
+    <button class="tab" onclick="switchTab('delete', this)">Данс устгах</button>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="tab-pane active" id="tab-profile">
+    <div class="card">
+      <div class="card-title">Хувийн мэдээлэл</div>
+      <div class="card-desc">Таны нэр, имэйл, утасны дугаар болон хадгалсан хаяг</div>
+      <div class="form-group">
+        <label class="form-label">Нэр</label>
+        <input class="form-input" id="profileName" type="text" placeholder="Таны нэр">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Имэйл</label>
+        <input class="form-input" id="profileEmail" type="email" disabled>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Утасны дугаар</label>
+        <input class="form-input" id="profilePhone" type="tel" placeholder="9900-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Хадгалсан хаяг</label>
+        <input class="form-input" id="profileAddress" type="text" placeholder="Дүүрэг, хороо, байр...">
+      </div>
+      <button class="btn btn-primary" onclick="updateProfile()">Хадгалах</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Privacy & data management</div>
+      <div class="card-desc">Өөрийн мэдээллээ удирдах хурдан үйлдлүүд</div>
+      <div class="settings-grid">
+        <div class="mini-card">
+          <div class="mini-card-title">Карт устгах</div>
+          <p>Qvinty дээр одоогоор шууд төлбөр хадгалахгүй. Ирээдүйд payment нэмэгдэхэд энэ хэсэг ашиглагдана.</p>
+          <button class="btn btn-outline btn-sm" onclick="alert('Одоогоор хадгалсан карт байхгүй.')">Картууд харах</button>
+        </div>
+        <div class="mini-card">
+          <div class="mini-card-title">Account data татах</div>
+          <p>Profile болон auth email мэдээллээ JSON файлаар татаж авна.</p>
+          <button class="btn btn-outline btn-sm" onclick="exportAccountData()">Data export</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Нууц үг солих</div>
+      <div class="card-desc">Аюулгүй байлгахын тулд хүчтэй нууц үг сонгоорой</div>
+      <div class="form-group">
+        <label class="form-label">Одоогийн нууц үг</label>
+        <input class="form-input" id="oldPass" type="password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Шинэ нууц үг</label>
+        <input class="form-input" id="newPass" type="password">
+      </div>
+      <button class="btn btn-primary" onclick="changePassword()">Нууц үг солих</button>
+    </div>
+  </div>
+
+  <!-- PRIVACY -->
+  <div class="tab-pane" id="tab-privacy">
+    <div class="card">
+      <div class="card-title">Мэдээллийн нууцлал</div>
+      <div class="card-desc">Таны мэдээллийг хэрхэн ашиглаж, хамгаалж байгаа тухай</div>
+      <div class="terms-content">
+        <h3>Бид ямар мэдээлэл цуглуулдаг вэ?</h3>
+        <p>Qvinty платформ нь дараах мэдээллийг цуглуулж хадгалдаг:</p>
+        <ul>
+          <li><strong>Бүртгэлийн мэдээлэл:</strong> Нэр, имэйл хаяг, утасны дугаар</li>
+          <li><strong>Дэлгүүрийн мэдээлэл:</strong> Дэлгүүрийн нэр, ангилал, хаяг, бараа бүтээгдэхүүн</li>
+          <li><strong>Техникийн мэдээлэл:</strong> IP хаяг, төхөөрөмжийн мэдээлэл, үйлдлийн түүх (activity logs)</li>
+          <li><strong>Хэрэглээний мэдээлэл:</strong> Таны сайт дээрх үйлдлүүд, хайлтын түүх</li>
+        </ul>
+
+        <h3>Мэдээллийг яаж ашигладаг вэ?</h3>
+        <ul>
+          <li>Платформын үйлчилгээг хүргэх, сайжруулах</li>
+          <li>Дэлгүүр болон бараа бүтээгдэхүүнийг харуулах</li>
+          <li>Системийн аюулгүй байдлыг хангах</li>
+          <li>Хэрэглэгчийн дэмжлэг үзүүлэх</li>
+          <li>Статистик мэдээлэл боловсруулах</li>
+        </ul>
+
+        <h3>Мэдээллийн аюулгүй байдал</h3>
+        <p>Таны мэдээллийг хамгаалахын тулд:</p>
+        <ul>
+          <li>HTTPS протокол ашиглан шифрлэх</li>
+          <li>Supabase аюулгүй database ашиглах</li>
+          <li>Нууц үгийг хадгалахгүй (hash хэлбэрээр)</li>
+          <li>Системийн хандалтыг хязгаарлах</li>
+        </ul>
+
+        <h3>Таны эрх</h3>
+        <p>Та дараах эрхтэй:</p>
+        <ul>
+          <li>Өөрийн мэдээллээ харах, засварлах</li>
+          <li>Мэдээллээ татаж авах (data export)</li>
+          <li>Бүртгэлээ устгах</li>
+          <li>Зөвшөөрлөө буцаах</li>
+        </ul>
+
+        <h3>Гуравдагч этгээд</h3>
+        <p>Бид таны хувийн мэдээллийг гуравдагч этгээдэд зарах, түрээслэхгүй. Зөвхөн дараах тохиолдолд хуваалцаж болно:</p>
+        <ul>
+          <li>Техникийн үйлчилгээ үзүүлэгч (Supabase, Vercel)</li>
+          <li>Хууль эрх зүйн шаардлага</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Мэдэгдлийн тохиргоо</div>
+      <div class="card-desc">Ямар мэдэгдэл хүлээн авахаа сонгоорой</div>
+      <div class="form-checkbox">
+        <input type="checkbox" id="notifEmail" checked>
+        <label for="notifEmail">Имэйл мэдэгдэл (order update, account update)</label>
+      </div>
+      <div class="form-checkbox">
+        <input type="checkbox" id="notifMarketing">
+        <label for="notifMarketing">Discount alert болон санал</label>
+      </div>
+      <button class="btn btn-primary" onclick="saveNotif()">Хадгалах</button>
+    </div>
+  </div>
+
+  <!-- TERMS -->
+  <div class="tab-pane" id="tab-terms">
+    <div class="card">
+      <div class="card-title">Үйлчилгээний нөхцөл</div>
+      <div class="card-desc">Qvinty платформыг ашиглахад мөрдөх дүрэм, журам</div>
+      <div class="terms-content">
+        <h3>1. Платформын зориулалт</h3>
+        <p>Qvinty нь cafe, дэлгүүр болон бусад бизнесийн мэдээллийг хэрэглэгчдэд хүргэх мэдээллийн платформ юм. Манай сайт дээр шууд худалдаа, төлбөрийн үйлчилгээ явагдахгүй бөгөөд зөвхөн мэдээллийн зуучлалын үүрэг гүйцэтгэнэ.</p>
+
+        <h3>2. Хэрэглэгчийн үүрэг</h3>
+        <p>Платформ ашиглахдаа:</p>
+        <ul>
+          <li>Худал эсвэл төөрөгдүүлсэн мэдээлэл нийтлэхгүй байх</li>
+          <li>Spam, scam болон хууль бус үйлдэл хийхгүй байх</li>
+          <li>Бусдыг доромжлох, ялгаварлан гадуурхах агуулга нийтлэхгүй байх</li>
+          <li>Хуурамч үнэлгээ оруулахгүй байх</li>
+          <li>Системд халдах оролдлого хийхгүй байх</li>
+        </ul>
+
+        <h3>3. Бизнесийн мэдээлэл</h3>
+        <p>Дэлгүүр эзэмшигч болон мэдээлэл нийтлэгч нь:</p>
+        <ul>
+          <li>Үнэн зөв мэдээлэл оруулах</li>
+          <li>Зураг, текстийн эрхийг өөрөө хариуцах</li>
+          <li>Хэрэглэгчийг төөрөгдүүлэх мэдээлэл нийтлэхгүй байх</li>
+        </ul>
+        <p><strong>Анхаар:</strong> Платформ нь бизнесийн оруулсан мэдээллийн үнэн зөв байдлыг бүрэн баталгаажуулахгүй.</p>
+
+        <h3>4. Үнэлгээ болон сэтгэгдэл</h3>
+        <p>Хэрэглэгчийн үлдээсэн үнэлгээ, сэтгэгдлийн хариуцлагыг тухайн хэрэглэгч өөрөө хариуцна. Дараах агуулгыг хориглоно:</p>
+        <ul>
+          <li>Худал үнэлгээ</li>
+          <li>Доромжлол, үзэн ядалт</li>
+          <li>Spam агуулга</li>
+          <li>Хууль бус контент</li>
+        </ul>
+
+        <h3>5. Хариуцлагын хязгаарлалт</h3>
+        <p><strong>Чухал:</strong> Манай дэлгүүртэй холбоотой аливаа асуудалд хариуцлага хүлээхгүй.</p>
+        <ul>
+          <li>Платформ зөвхөн мэдээллийн үйлчилгээ үзүүлдэг</li>
+          <li>Бизнес мэдээлэл, зураг, үнэлгээний үнэн зөв байдалд баталгаа өгөхгүй</li>
+          <li>Бизнес болон хэрэглэгчийн маргаанд шууд хариуцлага хүлээхгүй</li>
+          <li>Үйлчилгээ, бүтээгдэхүүний чанар, хүргэлтэд хариуцлагагүй</li>
+        </ul>
+
+        <h3>6. Оюуны өмч</h3>
+        <p>Платформын logo, дизайн, код, системийг зөвшөөрөлгүй хуулбарлах, тараах, ашиглахыг хориглоно.</p>
+
+        <h3>7. Дансны хязгаарлалт</h3>
+        <p>Платформ нь дараах тохиолдолд данс, мэдээллийг хязгаарлах эрхтэй:</p>
+        <ul>
+          <li>Дүрэм зөрчсөн</li>
+          <li>Хуурамч бизнес үүсгэсэн</li>
+          <li>Scam эсвэл spam үйлдэл</li>
+          <li>Аюулгүй байдалд эрсдэл учруулсан</li>
+        </ul>
+
+        <h3>8. Нөхцөлийн өөрчлөлт</h3>
+        <p>Платформ нь шаардлагатай үед үйлчилгээний нөхцөлийг шинэчлэх эрхтэй. Шинэчилсэн нөхцөл нийтлэгдсэний дараа платформыг үргэлжлүүлэн ашигласан нь шинэ нөхцөлийг зөвшөөрсөнд тооцогдоно.</p>
+
+        <p style="margin-top:24px;padding:16px;background:var(--pink-light);border-radius:var(--radius);font-size:13px;">
+          <strong>Хандив хөтөлбөр:</strong> ₮5,000 бүртгэлээс ₮1,000, ₮10,000 бүртгэлээс ₮2,000, ₮15,000 бүртгэлээс ₮3,000-ыг хорт хавдартай тэмцэж буй хүмүүст хандивлана. Энэ санааны credit-ийг “Уран сайхны кино”-оос авсан гэж тэмдэглэв.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE ACCOUNT -->
+  <div class="tab-pane" id="tab-delete">
+    <div class="alert alert-info">
+      ⚠️ <strong>Анхааруулга:</strong> Данс устгах үйлдэл нь эргэж буцаах боломжгүй. Таны бүх мэдээлэл, дэлгүүр, бараа бүтээгдэхүүн бүрмөсөн устана.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Данс устгахын өмнө</div>
+      <div class="card-desc">Дараах зүйлийг анхаарна уу:</div>
+      <div style="font-size:14px;line-height:1.7;">
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 8px;">Юу устах вэ?</h3>
+        <ul style="margin-left:20px;">
+          <li>Таны хувийн мэдээлэл (нэр, имэйл, утас)</li>
+          <li>Таны үүсгэсэн бүх дэлгүүр</li>
+          <li>Бараа бүтээгдэхүүний мэдээлэл болон зураг</li>
+          <li>Wishlist / Save for later мэдээлэл</li>
+          <li>Үнэлгээ, сэтгэгдэл</li>
+          <li>Системийн тохиргоо</li>
+        </ul>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 8px;">Юу хадгалагдах вэ?</h3>
+        <ul style="margin-left:20px;">
+          <li>Аюулгүй байдлын лог мэдээлэл (30 хоног)</li>
+          <li>Төлбөрийн баримт (хуулийн шаардлагаар)</li>
+          <li>Terms зөвшөөрсөн version, report/audit log зэрэг security бүртгэл</li>
+        </ul>
+
+        <h3 style="font-size:15px;font-weight:600;margin:16px 0 8px;">Буцаалт (Refund)</h3>
+        <p>Сарын төлбөр:</p>
+        <ul style="margin-left:20px;">
+          <li>Эхний 7 хоногт үнэгүй туршилт — refund хэрэггүй</li>
+          <li>7 хоногоос дээш ашигласан бол төлбөр буцаагдахгүй</li>
+          <li>Дэлгүүрийн өөрийн хүргэлт, бараа, үйлчилгээтэй холбоотой refund-ийг тухайн дэлгүүрийн policy шийднэ</li>
+          <li>Техникийн алдаа, платформын буруугаас үүссэн тохиолдолд бүрэн refund</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="danger-zone">
+      <div class="danger-zone-title">⚠️ Аюултай бүс</div>
+      <p style="font-size:13px;color:#991b1b;margin-bottom:16px;">Данс устгасны дараа эргүүлэн сэргээх боломжгүй. Энэ үйлдэл нь бүрмөсөн бөгөөд таны бүх мэдээлэл алга болно.</p>
+      <button class="btn btn-danger" onclick="openDeleteModal()">Данс устгах</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">Та итгэлтэй байна уу?</div>
+    <div class="modal-desc">Энэ үйлдлийг буцаах боломжгүй. Таны бүх мэдээлэл, дэлгүүр, бараа бүтээгдэхүүн бүрмөсөн устана.</div>
+    <div id="deleteError" class="alert alert-danger" style="display:none;"></div>
+    <div class="form-group">
+      <label class="form-label">Баталгаажуулахын тулд нууц үгээ оруулна уу:</label>
+      <input class="form-input" id="deletePassword" type="password" placeholder="Нууц үг">
+    </div>
+    <div class="form-checkbox">
+      <input type="checkbox" id="deleteConfirm">
+      <label for="deleteConfirm">Би ойлгож байна — энэ үйлдлийг буцаах боломжгүй</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Цуцлах</button>
+      <button class="btn btn-danger" onclick="deleteAccount()">Устгах</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://jsljvhzsuitawghvyipu.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbGp2aHpzdWl0YXdnaHZ5aXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDIyMjYsImV4cCI6MjA5NDU3ODIyNn0.VNpG6J9eng_joDuFATmOSEV3nWi1QCd3khjm42SyUmg'
+);
+let currentUser = null;
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+async function updateProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  const phone = document.getElementById('profilePhone').value.trim();
+  const address = document.getElementById('profileAddress').value.trim();
+  if (!name) { alert('Нэрээ оруулна уу'); return; }
+  const { error } = await sb.from('profiles').update({ full_name: name, phone, address }).eq('id', currentUser.id);
+  if (error) { alert('Алдаа: ' + error.message); return; }
+  alert('Амжилттай хадгалагдлаа! ✅');
+}
+
+async function changePassword() {
+  const newPass = document.getElementById('newPass').value;
+  if (newPass.length < 6) { alert('Нууц үг 6+ тэмдэгт байх ёстой'); return; }
+  const { error } = await sb.auth.updateUser({ password: newPass });
+  if (error) { alert('Алдаа: ' + error.message); return; }
+  alert('Нууц үг амжилттай солигдлоо! ✅');
+  document.getElementById('oldPass').value = '';
+  document.getElementById('newPass').value = '';
+}
+
+function saveNotif() {
+  alert('Тохиргоо хадгалагдлаа! ✅');
+}
+
+async function exportAccountData() {
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  const payload = {
+    exported_at: new Date().toISOString(),
+    user: { id: currentUser.id, email: currentUser.email },
+    profile: profile || null
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'qvinty-account-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function openDeleteModal() {
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+  document.getElementById('deletePassword').value = '';
+  document.getElementById('deleteConfirm').checked = false;
+  document.getElementById('deleteError').style.display = 'none';
+}
+
+async function deleteAccount() {
+  const pass = document.getElementById('deletePassword').value;
+  const confirm = document.getElementById('deleteConfirm').checked;
+  const err = document.getElementById('deleteError');
+  err.style.display = 'none';
+  
+  if (!pass) { err.textContent = 'Нууц үгээ оруулна уу'; err.style.display = 'block'; return; }
+  if (!confirm) { err.textContent = 'Баталгаажуулах checkbox-г тэмдэглэнэ үү'; err.style.display = 'block'; return; }
+
+  // Verify password
+  const email = currentUser.email;
+  const { error: signInError } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (signInError) { err.textContent = 'Нууц үг буруу байна'; err.style.display = 'block'; return; }
+
+  await sb.from('account_deletion_requests').insert({
+    user_id: currentUser.id,
+    email,
+    status: 'pending',
+    requested_at: new Date().toISOString()
+  });
+  await sb.from('shops').update({ is_active: false }).eq('owner_id', currentUser.id);
+  await sb.from('profiles').update({ deletion_requested: true }).eq('id', currentUser.id);
+  await sb.auth.signOut();
+  
+  alert('Данс устгах хүсэлт бүртгэгдлээ. Admin шалгаад auth account-ыг бүрмөсөн устгана.');
+  window.location.href = 'index.html';
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'index.html'; return; }
+  currentUser = session.user;
+  
+  // Load profile
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (profile) {
+    document.getElementById('profileName').value = profile.full_name || '';
+    document.getElementById('profilePhone').value = profile.phone || '';
+    document.getElementById('profileAddress').value = profile.address || '';
+  }
+  document.getElementById('profileEmail').value = currentUser.email;
+}
+
+init();
+</script>
+</body>
+</html>
+

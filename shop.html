@@ -1,0 +1,500 @@
+﻿<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarnai Cafe — ShopBase</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink-light: #FDE5E8;
+    --pink-mid: #E7B4B9;
+    --pink-deep: #A4565C;
+    --lime: #E8F0A2;
+    --olive: #999D4F;
+    --white: #FFFDF9;
+    --dark: #1C1A18;
+    --text: #3A3330;
+    --muted: #7A6E6B;
+    --radius: 14px;
+    --radius-lg: 22px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; overflow-x: hidden; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(255,253,249,0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--pink-mid);
+  }
+  .nav-logo { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--pink-deep); text-decoration: none; }
+  .nav-logo span { color: var(--olive); }
+  .nav-back { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; cursor: pointer; transition: color 0.2s; }
+  .nav-back:hover { color: var(--pink-deep); }
+  .nav-back svg { width: 16px; height: 16px; }
+  .lang-btn { display: flex; border: 1px solid var(--pink-mid); border-radius: 20px; overflow: hidden; }
+  .lang-btn button { padding: 5px 12px; font-size: 12px; font-weight: 500; background: transparent; border: none; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: background 0.2s, color 0.2s; }
+  .lang-btn button.active { background: var(--pink-deep); color: white; }
+
+  /* COVER */
+  .cover {
+    margin-top: 60px;
+    height: 280px;
+    background: linear-gradient(135deg, var(--pink-light) 0%, var(--pink-mid) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(255,253,249,0.6) 100%);
+  }
+
+  /* SHOP HEADER */
+  .shop-header {
+    max-width: 900px; margin: 0 auto;
+    padding: 0 24px;
+  }
+  .shop-header-top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-top: -28px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .shop-avatar {
+    width: 72px; height: 72px; border-radius: var(--radius-lg);
+    background: white; border: 3px solid white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; box-shadow: 0 4px 16px rgba(164,86,92,0.15);
+  }
+  .shop-title-wrap { flex: 1; padding-left: 14px; }
+  .shop-name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--dark); }
+  .shop-cat-tag { display: inline-block; background: var(--lime); color: var(--olive); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-top: 4px; }
+  .shop-actions { display: flex; gap: 8px; }
+  .btn-action {
+    padding: 9px 18px; border-radius: 30px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-follow { border: 1px solid var(--pink-mid); background: transparent; color: var(--pink-deep); }
+  .btn-follow:hover { background: var(--pink-light); }
+  .btn-order { border: none; background: var(--pink-deep); color: white; }
+  .btn-order:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  /* META ROW */
+  .meta-row {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 16px 0; border-top: 1px solid var(--pink-mid); border-bottom: 1px solid var(--pink-mid);
+    margin-bottom: 32px;
+  }
+  .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .meta-item strong { color: var(--text); }
+  .meta-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--pink-mid); }
+  .open-badge { display: inline-flex; align-items: center; gap: 4px; background: #e8f5e9; color: #388e3c; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+  .open-dot { width: 6px; height: 6px; border-radius: 50%; background: #388e3c; }
+
+  /* SOCIAL */
+  .social-row { display: flex; gap: 8px; margin-bottom: 32px; }
+  .social-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 30px; font-size: 12px; font-weight: 500;
+    text-decoration: none; border: 1px solid var(--pink-mid); color: var(--muted);
+    transition: all 0.2s; background: white;
+  }
+  .social-link:hover { border-color: var(--pink-deep); color: var(--pink-deep); }
+  .social-icon { font-size: 15px; }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--pink-mid);
+    margin-bottom: 28px; overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer;
+    color: var(--muted); border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: all 0.2s; background: transparent; border-top: none; border-left: none; border-right: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+
+  /* CONTENT SECTIONS */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* PRODUCTS */
+  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .product-card {
+    background: white; border: 1px solid var(--pink-mid); border-radius: var(--radius-lg);
+    overflow: hidden; cursor: pointer; transition: all 0.22s;
+  }
+  .product-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(164,86,92,0.1); }
+  .product-img {
+    height: 140px; background: var(--pink-light);
+    display: flex; align-items: center; justify-content: center; font-size: 48px;
+    position: relative;
+  }
+  .product-img.lime { background: linear-gradient(135deg, var(--lime), #d4e070); }
+  .product-img.warm { background: linear-gradient(135deg, #FFF3E0, #FFD9A0); }
+  .sale-tag {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--pink-deep); color: white; font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .product-info { padding: 12px; }
+  .product-name { font-size: 14px; font-weight: 500; color: var(--dark); margin-bottom: 4px; }
+  .product-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+  .product-footer { display: flex; align-items: center; justify-content: space-between; }
+  .product-price { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--pink-deep); }
+  .product-price-orig { font-size: 11px; color: var(--muted); text-decoration: line-through; margin-left: 4px; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .btn-add {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--pink-deep); color: white;
+    border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-add:hover { transform: scale(1.1); }
+
+  /* CATEGORY FILTER */
+  .cat-filter { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .cat-pill {
+    padding: 6px 16px; border-radius: 30px; font-size: 13px; cursor: pointer;
+    border: 1px solid var(--pink-mid); background: transparent; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .cat-pill.active, .cat-pill:hover { background: var(--pink-deep); color: white; border-color: var(--pink-deep); }
+
+  /* SCHEDULE */
+  .schedule-card {
+    background: white; border: 1px solid var(--pink-mid); border-radius: var(--radius-lg); overflow: hidden;
+    max-width: 480px;
+  }
+  .schedule-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid var(--pink-light); font-size: 14px;
+  }
+  .schedule-row:last-child { border-bottom: none; }
+  .schedule-row.today { background: var(--pink-light); }
+  .day-name { font-weight: 500; color: var(--dark); }
+  .day-time { color: var(--muted); }
+  .day-closed { color: var(--pink-deep); font-size: 13px; }
+  .day-open { color: #388e3c; font-size: 12px; font-weight: 500; }
+
+  /* DELIVERY */
+  .delivery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .delivery-card {
+    background: white; border: 1px solid var(--pink-mid); border-radius: var(--radius-lg);
+    padding: 20px; text-align: center;
+  }
+  .delivery-icon { font-size: 32px; margin-bottom: 10px; }
+  .delivery-title { font-size: 14px; font-weight: 500; color: var(--dark); margin-bottom: 4px; }
+  .delivery-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .delivery-price { font-size: 15px; font-weight: 500; color: var(--pink-deep); margin-top: 8px; }
+
+  /* INFO */
+  .info-section { max-width: 600px; }
+  .info-block { margin-bottom: 24px; }
+  .info-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .info-value { font-size: 15px; color: var(--dark); line-height: 1.6; }
+  .info-map {
+    height: 200px; background: var(--pink-light); border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--muted);
+    border: 1px solid var(--pink-mid); margin-top: 8px;
+  }
+
+  /* CART TOAST */
+  .cart-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--dark); color: white; padding: 12px 24px; border-radius: 30px;
+    font-size: 14px; display: flex; align-items: center; gap: 12px;
+    transition: transform 0.3s ease; z-index: 200; white-space: nowrap;
+  }
+  .cart-toast.show { transform: translateX(-50%) translateY(0); }
+  .cart-count { background: var(--pink-deep); color: white; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .cart-btn { background: var(--pink-deep); color: white; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+  @media (max-width: 640px) {
+    nav { padding: 12px 16px; }
+    .shop-header { padding: 0 16px; }
+    .cover { height: 200px; font-size: 60px; }
+    .products-grid { grid-template-columns: repeat(2, 1fr); }
+    .shop-actions { width: 100%; }
+    .btn-order, .btn-follow { flex: 1; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Shop<span>Base</span></a>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 12L6 8l4-4"/></svg>
+    <span data-mn="Буцах" data-en="Back">Буцах</span>
+  </a>
+  <div class="lang-btn">
+    <button class="active" onclick="setLang('mn')">МН</button>
+    <button onclick="setLang('en')">EN</button>
+  </div>
+</nav>
+
+<!-- COVER -->
+<div class="cover">☕</div>
+
+<!-- SHOP HEADER -->
+<div class="shop-header">
+  <div class="shop-header-top">
+    <div style="display:flex; align-items:flex-end; gap:0;">
+      <div class="shop-avatar">☕</div>
+      <div class="shop-title-wrap">
+        <div class="shop-name">Sarnai Cafe</div>
+        <span class="shop-cat-tag" data-mn="Cafe & Рестораны" data-en="Cafe & Restaurant">Cafe & Рестораны</span>
+      </div>
+    </div>
+    <div class="shop-actions">
+      <button class="btn-action btn-follow" data-mn="❤ Дагах" data-en="❤ Follow">❤ Дагах</button>
+      <button class="btn-action btn-order" data-mn="🛒 Захиалах" data-en="🛒 Order">🛒 Захиалах</button>
+    </div>
+  </div>
+
+  <!-- META -->
+  <div class="meta-row">
+    <div class="open-badge"><div class="open-dot"></div><span data-mn="Нээлттэй" data-en="Open now">Нээлттэй</span></div>
+    <div class="meta-dot"></div>
+    <div class="meta-item">★ <strong>4.9</strong> &nbsp;<span data-mn="(284 үнэлгээ)" data-en="(284 reviews)">(284 үнэлгээ)</span></div>
+    <div class="meta-dot"></div>
+    <div class="meta-item" data-mn="📍 Сүхбаатар дүүрэг, 5-р хороо" data-en="📍 Sukhbaatar district, 5th khoroo">📍 Сүхбаатар дүүрэг, 5-р хороо</div>
+    <div class="meta-dot"></div>
+    <div class="meta-item" data-mn="📞 9911-2233" data-en="📞 9911-2233">📞 9911-2233</div>
+  </div>
+
+  <!-- SOCIAL -->
+  <div class="social-row">
+    <a href="#" class="social-link"><span class="social-icon">📷</span> Instagram</a>
+    <a href="#" class="social-link"><span class="social-icon">👤</span> Facebook</a>
+    <a href="#" class="social-link"><span class="social-icon">🎵</span> TikTok</a>
+    <a href="#" class="social-link"><span class="social-icon">✕</span> X</a>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('products')" data-mn="Бараа бүтээгдэхүүн" data-en="Products">Бараа бүтээгдэхүүн</button>
+    <button class="tab" onclick="showTab('schedule')" data-mn="Ажиллах хуваарь" data-en="Schedule">Ажиллах хуваарь</button>
+    <button class="tab" onclick="showTab('delivery')" data-mn="Хүргэлт" data-en="Delivery">Хүргэлт</button>
+    <button class="tab" onclick="showTab('info')" data-mn="Мэдээлэл" data-en="Info">Мэдээлэл</button>
+  </div>
+
+  <!-- PRODUCTS TAB -->
+  <div class="tab-content active" id="tab-products">
+    <div class="cat-filter">
+      <button class="cat-pill active" data-mn="Бүгд" data-en="All">Бүгд</button>
+      <button class="cat-pill" data-mn="Кофе" data-en="Coffee">Кофе</button>
+      <button class="cat-pill" data-mn="Цай" data-en="Tea">Цай</button>
+      <button class="cat-pill" data-mn="Хоол" data-en="Food">Хоол</button>
+      <button class="cat-pill" data-mn="Десерт" data-en="Dessert">Десерт</button>
+    </div>
+    <div class="products-grid">
+      <div class="product-card">
+        <div class="product-img">☕</div>
+        <div class="product-info">
+          <div class="product-name" data-mn="Latte тусгай" data-en="Special Latte">Latte тусгай</div>
+          <div class="product-desc" data-mn="Espresso, сүү, ванилиар хийсэн онцгой амтлагч" data-en="Espresso, milk, and vanilla special blend">Espresso, сүү, ванилиар хийсэн онцгой амтлагч</div>
+          <div class="product-footer">
+            <div><span class="product-price">₮9,000</span></div>
+            <button class="btn-add" onclick="addToCart('Latte тусгай', 9000)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img lime"><span class="sale-tag">-20%</span>🍵</div>
+        <div class="product-info">
+          <div class="product-name" data-mn="Ногоон цай" data-en="Green Tea">Ногоон цай</div>
+          <div class="product-desc" data-mn="Японы уламжлалт арга технологиор хийсэн" data-en="Prepared using traditional Japanese method">Японы уламжлалт арга технологиор хийсэн</div>
+          <div class="product-footer">
+            <div><span class="product-price">₮6,400</span><span class="product-price-orig">₮8,000</span></div>
+            <button class="btn-add" onclick="addToCart('Ногоон цай', 6400)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img warm">🥐</div>
+        <div class="product-info">
+          <div class="product-name" data-mn="Круассан" data-en="Croissant">Круассан</div>
+          <div class="product-desc" data-mn="Өдөр бүр шинэхэн жигнэж бэлддэг" data-en="Freshly baked every day">Өдөр бүр шинэхэн жигнэж бэлддэг</div>
+          <div class="product-footer">
+            <div><span class="product-price">₮7,500</span></div>
+            <button class="btn-add" onclick="addToCart('Круассан', 7500)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img">🍰</div>
+        <div class="product-info">
+          <div class="product-name" data-mn="Чизкейк" data-en="Cheesecake">Чизкейк</div>
+          <div class="product-desc" data-mn="Нью-Йорк хэлбэрийн классик чизкейк" data-en="Classic New York style cheesecake">Нью-Йорк хэлбэрийн классик чизкейк</div>
+          <div class="product-footer">
+            <div><span class="product-price">₮12,000</span></div>
+            <button class="btn-add" onclick="addToCart('Чизкейк', 12000)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img" style="background: linear-gradient(135deg,#f3e5f5,#ce93d8)">🫐</div>
+        <div class="product-info">
+          <div class="product-name" data-mn="Нийслэлийн смузи" data-en="Berry Smoothie">Нийслэлийн смузи</div>
+          <div class="product-desc" data-mn="Хулуу, нийслэл, лимоны шүүс" data-en="Blueberry, strawberry and lemon juice">Хулуу, нийслэл, лимоны шүүс</div>
+          <div class="product-footer">
+            <div><span class="product-price">₮11,000</span></div>
+            <button class="btn-add" onclick="addToCart('Нийслэлийн смузи', 11000)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-img" style="background: linear-gradient(135deg,#e8f5e9,#a5d6a7)">🥗</div>
+        <div class="product-info">
+          <div class="product-name" data-mn="Цэцэгт байцааны салат" data-en="Garden Salad">Цэцэгт байцааны салат</div>
+          <div class="product-desc" data-mn="Свежий ногоо, оливийн тос, лимоны шүүс" data-en="Fresh greens, olive oil, lemon dressing">Свежий ногоо, оливийн тос, лимоны шүүс</div>
+          <div class="product-footer">
+            <div><span class="product-price">₮14,000</span></div>
+            <button class="btn-add" onclick="addToCart('Цэцэгт байцааны салат', 14000)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE TAB -->
+  <div class="tab-content" id="tab-schedule">
+    <div class="schedule-card">
+      <div class="schedule-row">
+        <span class="day-name" data-mn="Даваа" data-en="Monday">Даваа</span>
+        <span class="day-time">08:00 – 22:00</span>
+      </div>
+      <div class="schedule-row">
+        <span class="day-name" data-mn="Мягмар" data-en="Tuesday">Мягмар</span>
+        <span class="day-time">08:00 – 22:00</span>
+      </div>
+      <div class="schedule-row">
+        <span class="day-name" data-mn="Лхагва" data-en="Wednesday">Лхагва</span>
+        <span class="day-time">08:00 – 22:00</span>
+      </div>
+      <div class="schedule-row today">
+        <span class="day-name" data-mn="Пүрэв (өнөөдөр)" data-en="Thursday (today)">Пүрэв (өнөөдөр)</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="day-time">08:00 – 22:00</span>
+          <span class="day-open" data-mn="Нээлттэй" data-en="Open">Нээлттэй</span>
+        </div>
+      </div>
+      <div class="schedule-row">
+        <span class="day-name" data-mn="Баасан" data-en="Friday">Баасан</span>
+        <span class="day-time">08:00 – 23:00</span>
+      </div>
+      <div class="schedule-row">
+        <span class="day-name" data-mn="Бямба" data-en="Saturday">Бямба</span>
+        <span class="day-time">09:00 – 23:00</span>
+      </div>
+      <div class="schedule-row">
+        <span class="day-name" data-mn="Ням" data-en="Sunday">Ням</span>
+        <span class="day-closed" data-mn="Амарна" data-en="Closed">Амарна</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVERY TAB -->
+  <div class="tab-content" id="tab-delivery">
+    <div class="delivery-grid">
+      <div class="delivery-card">
+        <div class="delivery-icon">🛵</div>
+        <div class="delivery-title" data-mn="Хурдан хүргэлт" data-en="Express delivery">Хурдан хүргэлт</div>
+        <div class="delivery-desc" data-mn="30-45 минутын дотор хүргэнэ. Хот дотор бүх хэсэгт." data-en="Delivered within 30-45 minutes. All areas within the city.">30-45 минутын дотор хүргэнэ. Хот дотор бүх хэсэгт.</div>
+        <div class="delivery-price" data-mn="₮3,000 / захиалга" data-en="₮3,000 / order">₮3,000 / захиалга</div>
+      </div>
+      <div class="delivery-card">
+        <div class="delivery-icon">🚶</div>
+        <div class="delivery-title" data-mn="Өөрөө авах" data-en="Pickup">Өөрөө авах</div>
+        <div class="delivery-desc" data-mn="Захиалгаа өгөөд 15 минутын дотор бэлдэж өгнө." data-en="Order online and pick up in 15 minutes.">Захиалгаа өгөөд 15 минутын дотор бэлдэж өгнө.</div>
+        <div class="delivery-price" data-mn="Үнэгүй" data-en="Free">Үнэгүй</div>
+      </div>
+      <div class="delivery-card">
+        <div class="delivery-icon">📦</div>
+        <div class="delivery-title" data-mn="Урьдчилсан захиалга" data-en="Pre-order">Урьдчилсан захиалга</div>
+        <div class="delivery-desc" data-mn="Үйл явдал, уулзалтад зориулан урьдчилан захиалж болно." data-en="Pre-order for events or meetings.">Үйл явдал, уулзалтад зориулан урьдчилан захиалж болно.</div>
+        <div class="delivery-price" data-mn="Тохиролцоно" data-en="By agreement">Тохиролцоно</div>
+      </div>
+    </div>
+    <div style="background: var(--pink-light); border-radius: var(--radius); padding: 16px 20px; font-size: 13px; color: var(--muted); border: 1px solid var(--pink-mid);">
+      <strong style="color: var(--text);" data-mn="Анхаарна уу:" data-en="Note:">Анхаарна уу:</strong>
+      <span data-mn=" Хамгийн бага захиалга ₮15,000. Хүргэлтийн цаг 10:00–21:00." data-en=" Minimum order ₮15,000. Delivery hours 10:00–21:00."> Хамгийн бага захиалга ₮15,000. Хүргэлтийн цаг 10:00–21:00.</span>
+    </div>
+  </div>
+
+  <!-- INFO TAB -->
+  <div class="tab-content" id="tab-info">
+    <div class="info-section">
+      <div class="info-block">
+        <div class="info-label" data-mn="ТУХАЙ" data-en="ABOUT">ТУХАЙ</div>
+        <div class="info-value" data-mn="Sarnai Cafe нь 2019 онд нээгдсэн, Улаанбаатарын хамгийн дотно, затишний cafe-нүүдийн нэг. Бид өндөр чанарын кофе, шинэхэн бэлдсэн хоол, халуун дулаан уур амьсгалыг санал болгодог." data-en="Sarnai Cafe opened in 2019 and is one of Ulaanbaatar's coziest cafes. We offer high quality coffee, freshly prepared food and a warm atmosphere.">Sarnai Cafe нь 2019 онд нээгдсэн, Улаанбаатарын хамгийн дотно, затишний cafe-нүүдийн нэг. Бид өндөр чанарын кофе, шинэхэн бэлдсэн хоол, халуун дулаан уур амьсгалыг санал болгодог.</div>
+      </div>
+      <div class="info-block">
+        <div class="info-label" data-mn="ХАЯГ" data-en="ADDRESS">ХАЯГ</div>
+        <div class="info-value" data-mn="Сүхбаатар дүүрэг, 5-р хороо, Энхтайваны өргөн чөлөө 15" data-en="Sukhbaatar district, 5th khoroo, Enkhtaivan Ave 15">Сүхбаатар дүүрэг, 5-р хороо, Энхтайваны өргөн чөлөө 15</div>
+        <div class="info-map">🗺 Газрын зураг (Google Maps)</div>
+      </div>
+      <div class="info-block">
+        <div class="info-label" data-mn="ХОЛБОО БАРИХ" data-en="CONTACT">ХОЛБОО БАРИХ</div>
+        <div class="info-value">📞 9911-2233<br>✉ sarnai@cafe.mn</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 80px;"></div>
+</div>
+
+<!-- CART TOAST -->
+<div class="cart-toast" id="cartToast">
+  <span id="cartText" data-mn="Сагсанд нэмэгдлээ" data-en="Added to cart">Сагсанд нэмэгдлээ</span>
+  <span class="cart-count" id="cartCount">0</span>
+  <button class="cart-btn" data-mn="Захиалах" data-en="Order">Захиалах</button>
+</div>
+
+<script>
+  let cartItems = 0;
+  let toastTimer;
+
+  function addToCart(name, price) {
+    cartItems++;
+    document.getElementById('cartCount').textContent = cartItems;
+    const toast = document.getElementById('cartToast');
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  document.querySelectorAll('.cat-pill').forEach(p => {
+    p.addEventListener('click', function() {
+      document.querySelectorAll('.cat-pill').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  function setLang(lang) {
+    document.querySelectorAll('.lang-btn button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.lang-btn button:${lang === 'mn' ? 'first-child' : 'last-child'}`).classList.add('active');
+    document.querySelectorAll('[data-mn]').forEach(el => {
+      const text = el.getAttribute('data-' + lang);
+      if (text) el.textContent = text;
+    });
+  }
+</script>
+</body>
+</html>
+
